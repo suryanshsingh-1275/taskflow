@@ -163,6 +163,8 @@ const Dashboard = () => {
 
                                     key={board.id}
 
+                                    id={board.id}
+
                                     title={board.title}
 
                                     description={board.description}
