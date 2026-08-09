@@ -18,9 +18,14 @@ interface Board {
 const Dashboard = () => {
 
     const navigate = useNavigate();
+    const [search, setSearch] = useState("");
     const [showCreateBoard, setShowCreateBoard] = useState(false);
 
     const [boards, setBoards] = useState<Board[]>([]);
+
+    const filteredBoards = boards.filter((board) =>
+    board.title.toLowerCase().includes(search.toLowerCase())
+    );
 
      const handleCreateBoard = (
         title: string,
@@ -133,6 +138,8 @@ const Dashboard = () => {
                         className="search-board"
                         type="text"
                         placeholder="Search Boards..."
+                        value={search}
+                        onChange={(e)=>setSearch(e.target.value)}
                     />
 
                 </div>
@@ -141,7 +148,7 @@ const Dashboard = () => {
 
                     {
 
-                        boards.length === 0 ?
+                        filteredBoards.length === 0 ?
 
                             <div className="no-boards">
 
@@ -157,7 +164,7 @@ const Dashboard = () => {
 
                             :
 
-                            boards.map((board) => (
+                            filteredBoards.map((board) => (
 
                                 <BoardCard
 
