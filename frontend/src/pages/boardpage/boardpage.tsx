@@ -100,6 +100,7 @@ const BoardPage = ({
                             id={column.id}
                             title={column.title}
                             tasks={column.tasks}
+                            boardId={id!}
                         />
 
                     ))
