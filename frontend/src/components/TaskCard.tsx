@@ -1,91 +1,150 @@
-import React from "react";
+import React, { useState } from "react";
+import EditTaskModal from "./EditTaskModal";
 
 interface Task {
-
     id: string;
-
     title: string;
-
     description: string;
-
     priority: string;
-
     dueDate: string;
-
     assignee: string;
-
 }
 
 interface TaskCardProps {
-
     task: Task;
-
 }
 
 const TaskCard = ({
     task,
 }: TaskCardProps) => {
 
+    const [showMenu, setShowMenu] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+
+
+    const handleThreeDots = (
+        e: React.MouseEvent<HTMLButtonElement>
+    ) => {
+
+        e.stopPropagation();
+
+        setShowMenu(!showMenu);
+    };
+
+
+    const handleEdit = (updatedTask: Task) => {
+
+        console.log("Updated Task:");
+        console.log(updatedTask);
+
+    };
+
+
+    const handleDelete = (taskId: string) => {
+
+        console.log("Delete Task:");
+        console.log(taskId);
+
+    };
+
+
     return (
 
-        <div className="task-card">
+        <>
 
-            <div className="task-card-header">
+            <div className="task-card">
 
-                <h3 className="task-title">
-                    {task.title}
-                </h3>
+                <div className="task-card-header">
 
-                <button className="task-menu-button">
-                    ⋮
-                </button>
-
-            </div>
+                    <h3 className="task-title">
+                        {task.title}
+                    </h3>
 
 
-            <div className="task-card-body">
-
-                <p className="task-description">
-                    {task.description}
-                </p>
-
-                <div className="task-details">
-
-                    <div className="task-priority">
-
-                        <span>
-                            Priority:
-                        </span>
-
-                        <span>
-                            {task.priority}
-                        </span>
-
-                    </div>
+                    <button
+                        className="task-menu-button"
+                        onClick={handleThreeDots}
+                    >
+                        ⋮
+                    </button>
 
 
-                    <div className="task-due-date">
+                    {showMenu && (
 
-                        <span>
-                            📅
-                        </span>
+                        <div className="task-menu">
 
-                        <span>
-                            {task.dueDate}
-                        </span>
+                            <button
+                                onClick={() => {
+                                    setShowEditModal(true);
+                                    setShowMenu(false);
+                                }}
+                            >
+                                Edit
+                            </button>
 
-                    </div>
+
+                            <button
+                                onClick={() => {
+                                    handleDelete(task.id);
+                                    setShowMenu(false);
+                                }}
+                            >
+                                Delete
+                            </button>
+
+                        </div>
+
+                    )}
+
+                </div>
 
 
-                    <div className="task-assignee">
+                <div className="task-card-body">
 
-                        <span>
-                            👤
-                        </span>
+                    <p className="task-description">
+                        {task.description}
+                    </p>
 
-                        <span>
-                            {task.assignee}
-                        </span>
+
+                    <div className="task-details">
+
+                        <div className="task-priority">
+
+                            <span>
+                                Priority:
+                            </span>
+
+                            <span>
+                                {task.priority}
+                            </span>
+
+                        </div>
+
+
+                        <div className="task-due-date">
+
+                            <span>
+                                📅
+                            </span>
+
+                            <span>
+                                {task.dueDate}
+                            </span>
+
+                        </div>
+
+
+                        <div className="task-assignee">
+
+                            <span>
+                                👤
+                            </span>
+
+                            <span>
+                                {task.assignee}
+                            </span>
+
+                        </div>
 
                     </div>
 
@@ -93,10 +152,24 @@ const TaskCard = ({
 
             </div>
 
-        </div>
+
+            <EditTaskModal
+
+                isOpen={showEditModal}
+
+                task={task}
+
+                onClose={() => setShowEditModal(false)}
+
+                onEdit={handleEdit}
+
+                onDelete={handleDelete}
+
+            />
+
+        </>
 
     );
-
 };
 
 export default TaskCard;
