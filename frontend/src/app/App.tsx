@@ -8,7 +8,7 @@ import Dashboard from "../pages/dashboard/Dashboard";
 import BoardPage from "../pages/boardpage/boardpage";
 
 import Profile from "../pages/profile/Profile";
-//import Calendar from "../pages/calendar/Calendar";
+import Calendar from "../pages/calendar/Calender";
 import Analytics from "../pages/analytics/Analytics";
 
 
