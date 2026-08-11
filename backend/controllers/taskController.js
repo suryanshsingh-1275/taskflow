@@ -14,7 +14,7 @@ export const createTask = async (req, res) => {
             dueDate,
             assignee,
             board,
-            status
+            column
         } = req.body;
 
 
@@ -41,7 +41,9 @@ export const createTask = async (req, res) => {
 
             board,
 
-            status: status || "todo"
+            column: column || "todo",
+
+            createdBy: req.user.userId
 
         });
 

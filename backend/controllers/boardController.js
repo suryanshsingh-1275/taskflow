@@ -39,13 +39,11 @@ export const createBoard = async (req, res) => {
 
             owner: req.user.userId,
 
-            members: 1,
+            members: [req.user.userId],
 
-            tasks: 0,
+            favorite: false,
 
-            completedTasks: 0,
-
-            favorite: false
+            archived:false
 
         });
 

@@ -3,9 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 
-// =========================
 // SIGNUP
-// =========================
 
 export const signup = async (req, res) => {
 

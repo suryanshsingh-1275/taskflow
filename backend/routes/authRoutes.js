@@ -6,17 +6,15 @@ import {
 import authMiddleware from "../middleware/authMiddleware.js";
 
 
+const router = express.Router();
 
 router.post("/signup",
-    authMiddleware,
     signup);
 
 
 router.post("/login",
-    authMiddleware,
     login);
 
 
-const router = express.Router();
 
 export default router;
