@@ -7,16 +7,48 @@ import {
     deleteBoard
 } from "../controllers/boardController.js";
 
+import authMiddleware from "../middleware/authMiddleware.js";
+import roleMiddleware from "../middleware/roleMiddleware.js";
+
+
 const router = express.Router();
 
-router.post("/", createBoard);
 
-router.get("/", getBoards);
+router.post(
+    "/",
+    authMiddleware,
+    createBoard
+);
 
-router.get("/:id", getBoard);
 
-router.put("/:id", updateBoard);
+router.get(
+    "/",
+    authMiddleware,
+    getBoards
+);
 
-router.delete("/:id", deleteBoard);
+
+router.get(
+    "/:id",
+    authMiddleware,
+    getBoard
+);
+
+
+router.put(
+    "/:id",
+    authMiddleware,
+    roleMiddleware("admin"),
+    updateBoard
+);
+
+
+router.delete(
+    "/:id",
+    authMiddleware,
+    roleMiddleware("admin"),
+    deleteBoard
+);
+
 
 export default router;
