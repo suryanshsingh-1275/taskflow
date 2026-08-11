@@ -3,61 +3,41 @@ import TaskCard from "./TaskCard";
 import CreateTaskModal from "./CreateTaskModel";
 import api from "../api/axios";
 
-
 interface Task {
-
     id: string;
-
     title: string;
-
     description: string;
-
     priority: string;
-
     dueDate: string;
-
     assignee: string;
-
     column: string;
-
 }
-
-
-interface ColumnProps {
-
-    id: string;
-
-    title: string;
-
-    tasks: Task[];
-
-    boardId: string;
-
-}
-
 
 interface TaskData {
-
     title: string;
-
     description: string;
-
     priority: string;
-
     dueDate: string;
-
     assignee: string;
-
 }
 
+interface ColumnProps {
+    id: string;
+    title: string;
+    tasks: Task[];
+    boardId: string;
+
+    // Called after task is successfully created
+    onTaskCreated: () => void;
+}
 
 const Column = ({
     id,
     title,
     tasks,
     boardId,
+    onTaskCreated,
 }: ColumnProps) => {
-
 
     const [showCreateTask, setShowCreateTask] =
         useState(false);
@@ -72,21 +52,21 @@ const Column = ({
             const res = await api.post(
                 "/tasks",
                 {
-
                     title: task.title,
-
                     description: task.description,
-
                     priority: task.priority,
+                    dueDate: task.dueDate || null,
 
-                    dueDate: task.dueDate,
-
-                    assignee: task.assignee,
+                    // Important:
+                    // Backend expects ObjectId for assignee.
+                    // If you're not assigning a user yet,
+                    // send null instead of an empty string.
+                    assignee: task.assignee || null,
 
                     board: boardId,
 
-                    column:id,
-
+                    // Your schema calls this "column"
+                    column: id,
                 }
             );
 
@@ -97,9 +77,12 @@ const Column = ({
             );
 
 
-            // Close modal after successful creation
-
+            // Close modal
             setShowCreateTask(false);
+
+
+            // Tell BoardPage to fetch tasks again
+            onTaskCreated();
 
 
         } catch (error) {
@@ -119,7 +102,7 @@ const Column = ({
         <div className="column-container">
 
 
-            {/* Column Header */}
+            {/* COLUMN HEADER */}
 
             <div className="column-header">
 
@@ -136,19 +119,21 @@ const Column = ({
                 </div>
 
 
-                <button className="column-menu-button">
+                <button
+                    className="column-menu-button"
+                    type="button"
+                >
                     ⋮
                 </button>
 
             </div>
 
 
-            {/* Column Body */}
+            {/* COLUMN BODY */}
 
             <div className="column-body">
 
                 {
-
                     tasks.length === 0
 
                         ?
@@ -171,18 +156,18 @@ const Column = ({
                             />
 
                         ))
-
                 }
 
             </div>
 
 
-            {/* Column Footer */}
+            {/* COLUMN FOOTER */}
 
             <div className="column-footer">
 
                 <button
                     className="add-task-column-button"
+                    type="button"
                     onClick={() =>
                         setShowCreateTask(true)
                     }
@@ -193,7 +178,7 @@ const Column = ({
             </div>
 
 
-            {/* Create Task Modal */}
+            {/* CREATE TASK MODAL */}
 
             <CreateTaskModal
 
@@ -214,8 +199,6 @@ const Column = ({
         </div>
 
     );
-
 };
-
 
 export default Column;

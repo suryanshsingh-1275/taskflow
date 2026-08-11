@@ -3,90 +3,140 @@ import { useParams } from "react-router-dom";
 import Column from "../../components/Column";
 import api from "../../api/axios";
 
-
 interface Task {
-
-    id: string;
-
+    _id: string;
     title: string;
-
     description: string;
-
     priority: string;
-
-    dueDate: string;
-
-    assignee: string;
-
-    column: string;
-
+    dueDate: string | null;
+    assignee: string | null;
+    column: "todo" | "progress" | "review" | "done";
 }
-
 
 interface ColumnData {
-
-    id: string;
-
+    id: "todo" | "progress" | "review" | "done";
     title: string;
-
     tasks: Task[];
-
 }
-
 
 interface Board {
-
-    id: string;
-
+    _id: string;
     title: string;
-
     description: string;
-
 }
-
 
 const BoardPage = () => {
 
-    const { id } = useParams();
+    const { id } = useParams<{ id: string }>();
+
+    const [board, setBoard] = useState<Board | null>(null);
+
+    const [columns, setColumns] = useState<ColumnData[]>([
+        {
+            id: "todo",
+            title: "Todo",
+            tasks: [],
+        },
+        {
+            id: "progress",
+            title: "In Progress",
+            tasks: [],
+        },
+        {
+            id: "review",
+            title: "Review",
+            tasks: [],
+        },
+        {
+            id: "done",
+            title: "Done",
+            tasks: [],
+        },
+    ]);
+
+    const [loading, setLoading] = useState(true);
 
 
-    const [board, setBoard] =
-        useState<Board | null>(null);
+    // ==========================================
+    // FETCH TASKS
+    // ==========================================
+
+    const fetchTasks = async () => {
+
+        if (!id) {
+            return;
+        }
+
+        try {
+
+            const res = await api.get(
+                `/tasks/board/${id}`
+            );
+
+            console.log(
+                "Tasks Response:",
+                res.data
+            );
+
+            const tasks: Task[] =
+                res.data.tasks || [];
 
 
-    const [columns, setColumns] =
-        useState<ColumnData[]>([
+            setColumns([
 
-            {
-                id: "todo",
-                title: "Todo",
-                tasks: [],
-            },
+                {
+                    id: "todo",
+                    title: "Todo",
+                    tasks: tasks.filter(
+                        (task) =>
+                            task.column === "todo"
+                    ),
+                },
 
-            {
-                id: "progress",
-                title: "In Progress",
-                tasks: [],
-            },
+                {
+                    id: "progress",
+                    title: "In Progress",
+                    tasks: tasks.filter(
+                        (task) =>
+                            task.column === "progress"
+                    ),
+                },
 
-            {
-                id: "review",
-                title: "Review",
-                tasks: [],
-            },
+                {
+                    id: "review",
+                    title: "Review",
+                    tasks: tasks.filter(
+                        (task) =>
+                            task.column === "review"
+                    ),
+                },
 
-            {
-                id: "done",
-                title: "Done",
-                tasks: [],
-            },
+                {
+                    id: "done",
+                    title: "Done",
+                    tasks: tasks.filter(
+                        (task) =>
+                            task.column === "done"
+                    ),
+                },
 
-        ]);
+            ]);
+
+        } catch (error) {
+
+            console.error(
+                "Failed to fetch tasks:",
+                error
+            );
+
+        }
+
+    };
 
 
-    const [loading, setLoading] =
-        useState(true);
-
+    // ==========================================
+    // FETCH BOARD + TASKS
+    // ==========================================
 
     useEffect(() => {
 
@@ -99,95 +149,30 @@ const BoardPage = () => {
                 }
 
 
-                /*
-                    GET BOARD
-                */
+                // GET BOARD
 
                 const boardRes = await api.get(
                     `/boards/${id}`
                 );
-
 
                 console.log(
                     "Board Response:",
                     boardRes.data
                 );
 
-
                 setBoard(
                     boardRes.data.board
                 );
 
 
-                /*
-                    GET TASKS OF BOARD
-                */
+                // GET TASKS
 
-                const taskRes = await api.get(
-                    `/tasks/board/${id}`
-                );
-
-
-                console.log(
-                    "Tasks Response:",
-                    taskRes.data
-                );
-
-
-                const tasks: Task[] =
-                    taskRes.data.tasks;
-
-
-                /*
-                    Put tasks into
-                    their respective columns
-                */
-
-                setColumns([
-
-                    {
-                        id: "todo",
-                        title: "Todo",
-                        tasks: tasks.filter(
-                            (task) =>
-                                task.column === "todo"
-                        ),
-                    },
-
-                    {
-                        id: "progress",
-                        title: "In Progress",
-                        tasks: tasks.filter(
-                            (task) =>
-                                task.column === "progress"
-                        ),
-                    },
-
-                    {
-                        id: "review",
-                        title: "Review",
-                        tasks: tasks.filter(
-                            (task) =>
-                                task.column === "review"
-                        ),
-                    },
-
-                    {
-                        id: "done",
-                        title: "Done",
-                        tasks: tasks.filter(
-                            (task) =>
-                                task.column === "done"
-                        ),
-                    },
-
-                ]);
-
+                await fetchTasks();
 
             } catch (error) {
 
                 console.error(
-                    "Failed to fetch board data:",
+                    "Failed to fetch board:",
                     error
                 );
 
@@ -205,58 +190,57 @@ const BoardPage = () => {
     }, [id]);
 
 
+    // ==========================================
+    // LOADING
+    // ==========================================
+
     if (loading) {
 
         return (
-
             <div className="loading">
-
                 Loading board...
-
             </div>
-
         );
 
     }
 
+
+    // ==========================================
+    // BOARD NOT FOUND
+    // ==========================================
 
     if (!board) {
 
         return (
-
             <div className="no-board">
-
                 Board not found
-
             </div>
-
         );
 
     }
 
+
+    // ==========================================
+    // UI
+    // ==========================================
 
     return (
 
         <div className="board-page-container">
 
 
-            {/* Board Header */}
+            {/* BOARD HEADER */}
 
             <div className="board-page-header">
 
                 <div className="board-page-info">
 
                     <h1 className="board-page-title">
-
                         {board.title}
-
                     </h1>
 
-
                     <p className="board-page-description">
-
                         {board.description}
-
                     </p>
 
                 </div>
@@ -270,9 +254,12 @@ const BoardPage = () => {
                         Search
                     </button>
 
-
                     <button
                         className="add-task-button"
+                        onClick={() => {
+                            // We will handle this later
+                            // through the column modal.
+                        }}
                     >
                         + Add Task
                     </button>
@@ -282,12 +269,11 @@ const BoardPage = () => {
             </div>
 
 
-            {/* Columns */}
+            {/* COLUMNS */}
 
             <div className="columns-container">
 
                 {
-
                     columns.map((column) => (
 
                         <Column
@@ -302,10 +288,11 @@ const BoardPage = () => {
 
                             boardId={id!}
 
+                            onTaskCreated={fetchTasks}
+
                         />
 
                     ))
-
                 }
 
             </div>
@@ -316,6 +303,5 @@ const BoardPage = () => {
     );
 
 };
-
 
 export default BoardPage;

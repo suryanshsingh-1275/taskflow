@@ -9,66 +9,115 @@ const Signup = () => {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [phone, setPhone] = useState("");
+    const [age, setAge] = useState("");
+
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
 
+
     const handleSubmit = async (
-        e: React.SyntheticEvent<HTMLFormElement>
+        e: React.FormEvent<HTMLFormElement>
     ) => {
 
         e.preventDefault();
 
+
+        // Check empty fields
+
         if (
-            name === "" ||
-            email === "" ||
-            phone === "" ||
+            name.trim() === "" ||
+            email.trim() === "" ||
+            phone.trim() === "" ||
+            age.trim() === "" ||
             password === "" ||
             confirmPassword === ""
         ) {
 
             console.log("Please fill all fields");
-            return;
 
+            return;
         }
+
+
+        // Check password
 
         if (password !== confirmPassword) {
 
             console.log("Passwords do not match");
-            return;
 
+            return;
         }
+
+
+        // Convert age to number
+
+        const ageNumber = Number(age);
+
+
+        if (ageNumber <= 0) {
+
+            console.log("Please enter a valid age");
+
+            return;
+        }
+
 
         try {
 
             const res = await api.post(
                 "/auth/signup",
                 {
-                    name,
-                    email,
-                    phone,
-                    password,
+                    name: name.trim(),
+                    email: email.trim(),
+                    phone: phone.trim(),
+                    age: ageNumber,
+                    password
                 }
             );
 
-            console.log(res.data);
-            console.log("Account Created Successfully");
 
-            // navigate("/login");
+            console.log(
+                "Signup Response:",
+                res.data
+            );
+
+
+            console.log(
+                "Account Created Successfully"
+            );
+
+
+            // Go to login after successful signup
+
             navigate("/login");
 
-        } catch (err) {
 
-            console.error(err);
+        } catch (error: any) {
+
+            console.error(
+                "Signup Error:",
+                error
+            );
+
+
+            console.error(
+                "Server Response:",
+                error.response?.data
+            );
 
         }
 
     };
+
 
     return (
 
         <div className="signup-container">
 
             <div className="signup-card">
+
+
+                {/* TITLE */}
 
                 <div className="title-div">
 
@@ -82,10 +131,16 @@ const Signup = () => {
 
                 </div>
 
+
+                {/* FORM */}
+
                 <form
                     className="signup-form"
                     onSubmit={handleSubmit}
                 >
+
+
+                    {/* NAME */}
 
                     <div className="form-group">
 
@@ -105,6 +160,9 @@ const Signup = () => {
 
                     </div>
 
+
+                    {/* EMAIL */}
+
                     <div className="form-group">
 
                         <label className="form-label">
@@ -122,6 +180,9 @@ const Signup = () => {
                         />
 
                     </div>
+
+
+                    {/* PHONE */}
 
                     <div className="form-group">
 
@@ -141,6 +202,31 @@ const Signup = () => {
 
                     </div>
 
+
+                    {/* AGE */}
+
+                    <div className="form-group">
+
+                        <label className="form-label">
+                            Age
+                        </label>
+
+                        <input
+                            className="form-input"
+                            type="number"
+                            placeholder="Enter Age"
+                            min="1"
+                            value={age}
+                            onChange={(e) =>
+                                setAge(e.target.value)
+                            }
+                        />
+
+                    </div>
+
+
+                    {/* PASSWORD */}
+
                     <div className="form-group">
 
                         <label className="form-label">
@@ -158,6 +244,9 @@ const Signup = () => {
                         />
 
                     </div>
+
+
+                    {/* CONFIRM PASSWORD */}
 
                     <div className="form-group">
 
@@ -177,6 +266,9 @@ const Signup = () => {
 
                     </div>
 
+
+                    {/* BUTTON */}
+
                     <div className="button-div">
 
                         <button
@@ -189,6 +281,9 @@ const Signup = () => {
                     </div>
 
                 </form>
+
+
+                {/* LOGIN */}
 
                 <div className="login-div">
 
@@ -205,12 +300,13 @@ const Signup = () => {
 
                 </div>
 
+
             </div>
 
         </div>
 
     );
-
 };
+
 
 export default Signup;
