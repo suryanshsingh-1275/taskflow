@@ -5,27 +5,43 @@ import api from "../../api/axios";
 
 
 interface Task {
+
     id: string;
+
     title: string;
+
     description: string;
+
     priority: string;
+
     dueDate: string;
+
     assignee: string;
-    status: string;
+
+    column: string;
+
 }
 
 
 interface ColumnData {
+
     id: string;
+
     title: string;
+
     tasks: Task[];
+
 }
 
 
 interface Board {
+
     id: string;
+
     title: string;
+
     description: string;
+
 }
 
 
@@ -34,41 +50,47 @@ const BoardPage = () => {
     const { id } = useParams();
 
 
-    const [board, setBoard] = useState<Board | null>(null);
-
-    const [columns, setColumns] = useState<ColumnData[]>([
-        {
-            id: "todo",
-            title: "Todo",
-            tasks: [],
-        },
-
-        {
-            id: "progress",
-            title: "In Progress",
-            tasks: [],
-        },
-
-        {
-            id: "review",
-            title: "Review",
-            tasks: [],
-        },
-
-        {
-            id: "done",
-            title: "Done",
-            tasks: [],
-        },
-    ]);
+    const [board, setBoard] =
+        useState<Board | null>(null);
 
 
-    const [loading, setLoading] = useState(true);
+    const [columns, setColumns] =
+        useState<ColumnData[]>([
+
+            {
+                id: "todo",
+                title: "Todo",
+                tasks: [],
+            },
+
+            {
+                id: "progress",
+                title: "In Progress",
+                tasks: [],
+            },
+
+            {
+                id: "review",
+                title: "Review",
+                tasks: [],
+            },
+
+            {
+                id: "done",
+                title: "Done",
+                tasks: [],
+            },
+
+        ]);
+
+
+    const [loading, setLoading] =
+        useState(true);
 
 
     useEffect(() => {
 
-        const fetchBoard = async () => {
+        const fetchBoardData = async () => {
 
             try {
 
@@ -77,30 +99,95 @@ const BoardPage = () => {
                 }
 
 
-                const res = await api.get(
+                /*
+                    GET BOARD
+                */
+
+                const boardRes = await api.get(
                     `/boards/${id}`
                 );
 
 
                 console.log(
                     "Board Response:",
-                    res.data
+                    boardRes.data
                 );
 
 
-                setBoard(res.data.board);
+                setBoard(
+                    boardRes.data.board
+                );
 
 
                 /*
-                    Later we'll get tasks from the
-                    backend response and distribute
-                    them into these four columns.
+                    GET TASKS OF BOARD
                 */
+
+                const taskRes = await api.get(
+                    `/tasks/board/${id}`
+                );
+
+
+                console.log(
+                    "Tasks Response:",
+                    taskRes.data
+                );
+
+
+                const tasks: Task[] =
+                    taskRes.data.tasks;
+
+
+                /*
+                    Put tasks into
+                    their respective columns
+                */
+
+                setColumns([
+
+                    {
+                        id: "todo",
+                        title: "Todo",
+                        tasks: tasks.filter(
+                            (task) =>
+                                task.column === "todo"
+                        ),
+                    },
+
+                    {
+                        id: "progress",
+                        title: "In Progress",
+                        tasks: tasks.filter(
+                            (task) =>
+                                task.column === "progress"
+                        ),
+                    },
+
+                    {
+                        id: "review",
+                        title: "Review",
+                        tasks: tasks.filter(
+                            (task) =>
+                                task.column === "review"
+                        ),
+                    },
+
+                    {
+                        id: "done",
+                        title: "Done",
+                        tasks: tasks.filter(
+                            (task) =>
+                                task.column === "done"
+                        ),
+                    },
+
+                ]);
+
 
             } catch (error) {
 
                 console.error(
-                    "Failed to fetch board:",
+                    "Failed to fetch board data:",
                     error
                 );
 
@@ -113,7 +200,7 @@ const BoardPage = () => {
         };
 
 
-        fetchBoard();
+        fetchBoardData();
 
     }, [id]);
 
@@ -121,9 +208,13 @@ const BoardPage = () => {
     if (loading) {
 
         return (
+
             <div className="loading">
+
                 Loading board...
+
             </div>
+
         );
 
     }
@@ -132,9 +223,13 @@ const BoardPage = () => {
     if (!board) {
 
         return (
+
             <div className="no-board">
+
                 Board not found
+
             </div>
+
         );
 
     }
@@ -152,11 +247,16 @@ const BoardPage = () => {
                 <div className="board-page-info">
 
                     <h1 className="board-page-title">
+
                         {board.title}
+
                     </h1>
 
+
                     <p className="board-page-description">
+
                         {board.description}
+
                     </p>
 
                 </div>
@@ -164,11 +264,16 @@ const BoardPage = () => {
 
                 <div className="board-page-actions">
 
-                    <button className="board-search-button">
+                    <button
+                        className="board-search-button"
+                    >
                         Search
                     </button>
 
-                    <button className="add-task-button">
+
+                    <button
+                        className="add-task-button"
+                    >
                         + Add Task
                     </button>
 
@@ -182,17 +287,25 @@ const BoardPage = () => {
             <div className="columns-container">
 
                 {
+
                     columns.map((column) => (
 
                         <Column
+
                             key={column.id}
+
                             id={column.id}
+
                             title={column.title}
+
                             tasks={column.tasks}
+
                             boardId={id!}
+
                         />
 
                     ))
+
                 }
 
             </div>

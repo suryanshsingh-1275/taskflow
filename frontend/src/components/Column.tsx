@@ -18,7 +18,7 @@ interface Task {
 
     assignee: string;
 
-    status: string;
+    column: string;
 
 }
 
