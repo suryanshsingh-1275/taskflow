@@ -1,22 +1,55 @@
 import { useState } from "react";
 import TaskCard from "./TaskCard";
 import CreateTaskModal from "./CreateTaskModel";
+import api from "../api/axios";
+
 
 interface Task {
+
     id: string;
+
     title: string;
+
     description: string;
+
     priority: string;
+
     dueDate: string;
+
     assignee: string;
+
+    status: string;
+
 }
 
+
 interface ColumnProps {
+
     id: string;
+
     title: string;
+
     tasks: Task[];
+
     boardId: string;
+
 }
+
+
+interface TaskData {
+
+    title: string;
+
+    description: string;
+
+    priority: string;
+
+    dueDate: string;
+
+    assignee: string;
+
+}
+
 
 const Column = ({
     id,
@@ -25,32 +58,68 @@ const Column = ({
     boardId,
 }: ColumnProps) => {
 
-    const [showCreateTask, setShowCreateTask] = useState(false);
 
-    const handleCreateTask = (task: {
-        title: string;
-        description: string;
-        priority: string;
-        dueDate: string;
-        assignee: string;
-    }) => {
+    const [showCreateTask, setShowCreateTask] =
+        useState(false);
 
-        console.log("Creating task...");
 
-        console.log("Board ID:", boardId);
+    const handleCreateTask = async (
+        task: TaskData
+    ) => {
 
-        console.log("Column ID:", id);
+        try {
 
-        console.log("Task:", task);
+            const res = await api.post(
+                "/tasks",
+                {
 
-        // Later:
-        // Axios POST request will go here.
+                    title: task.title,
+
+                    description: task.description,
+
+                    priority: task.priority,
+
+                    dueDate: task.dueDate,
+
+                    assignee: task.assignee,
+
+                    board: boardId,
+
+                    column:id,
+
+                }
+            );
+
+
+            console.log(
+                "Task Created:",
+                res.data
+            );
+
+
+            // Close modal after successful creation
+
+            setShowCreateTask(false);
+
+
+        } catch (error) {
+
+            console.error(
+                "Create Task Error:",
+                error
+            );
+
+        }
+
     };
 
 
     return (
 
         <div className="column-container">
+
+
+            {/* Column Header */}
 
             <div className="column-header">
 
@@ -66,6 +135,7 @@ const Column = ({
 
                 </div>
 
+
                 <button className="column-menu-button">
                     ⋮
                 </button>
@@ -73,10 +143,15 @@ const Column = ({
             </div>
 
 
+            {/* Column Body */}
+
             <div className="column-body">
 
                 {
-                    tasks.length === 0 ?
+
+                    tasks.length === 0
+
+                        ?
 
                         <div className="empty-column">
 
@@ -96,16 +171,21 @@ const Column = ({
                             />
 
                         ))
+
                 }
 
             </div>
 
 
+            {/* Column Footer */}
+
             <div className="column-footer">
 
                 <button
                     className="add-task-column-button"
-                    onClick={() => setShowCreateTask(true)}
+                    onClick={() =>
+                        setShowCreateTask(true)
+                    }
                 >
                     + Add Task
                 </button>
@@ -113,11 +193,15 @@ const Column = ({
             </div>
 
 
+            {/* Create Task Modal */}
+
             <CreateTaskModal
 
                 isOpen={showCreateTask}
 
-                onClose={() => setShowCreateTask(false)}
+                onClose={() =>
+                    setShowCreateTask(false)
+                }
 
                 boardId={boardId}
 
@@ -128,7 +212,10 @@ const Column = ({
             />
 
         </div>
+
     );
+
 };
+
 
 export default Column;
