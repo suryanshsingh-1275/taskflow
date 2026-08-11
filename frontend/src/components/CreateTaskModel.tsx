@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 interface TaskData {
     title: string;
@@ -32,26 +32,44 @@ const CreateTaskModal = ({
     const [dueDate, setDueDate] = useState("");
     const [assignee, setAssignee] = useState("");
 
+
     const handleCreate = () => {
 
         if (title.trim() === "") {
+
             console.log("Task title is required");
+
             return;
+
         }
 
+
         const task: TaskData = {
-            title,
+
+            title: title.trim(),
+
             description,
+
             priority,
+
             dueDate,
+
             assignee,
+
         };
+
 
         console.log("Board ID:", boardId);
         console.log("Column ID:", columnId);
         console.log("Task:", task);
 
+
+        // Send task to Column
+
         onCreate(task);
+
+
+        // Reset form
 
         setTitle("");
         setDescription("");
@@ -59,17 +77,22 @@ const CreateTaskModal = ({
         setDueDate("");
         setAssignee("");
 
-        onClose();
     };
+
 
     if (!isOpen) {
         return null;
     }
 
+
     return (
+
         <div className="modal-overlay">
 
             <div className="modal-container">
+
+
+                {/* Header */}
 
                 <div className="modal-header">
 
@@ -79,7 +102,13 @@ const CreateTaskModal = ({
 
                 </div>
 
+
+                {/* Body */}
+
                 <div className="modal-body">
+
+
+                    {/* Title */}
 
                     <div className="form-group">
 
@@ -92,11 +121,15 @@ const CreateTaskModal = ({
                             type="text"
                             placeholder="Enter Task Title"
                             value={title}
-                            onChange={(e) => setTitle(e.target.value)}
+                            onChange={(e) =>
+                                setTitle(e.target.value)
+                            }
                         />
 
                     </div>
 
+
+                    {/* Description */}
 
                     <div className="form-group">
 
@@ -115,6 +148,8 @@ const CreateTaskModal = ({
 
                     </div>
 
+
+                    {/* Priority */}
 
                     <div className="form-group">
 
@@ -147,6 +182,8 @@ const CreateTaskModal = ({
                     </div>
 
 
+                    {/* Due Date */}
+
                     <div className="form-group">
 
                         <label className="form-label">
@@ -164,6 +201,8 @@ const CreateTaskModal = ({
 
                     </div>
 
+
+                    {/* Assignee */}
 
                     <div className="form-group">
 
@@ -186,17 +225,22 @@ const CreateTaskModal = ({
                 </div>
 
 
+                {/* Footer */}
+
                 <div className="modal-footer">
 
                     <button
                         className="cancel-button"
+                        type="button"
                         onClick={onClose}
                     >
                         Cancel
                     </button>
 
+
                     <button
                         className="create-button"
+                        type="button"
                         onClick={handleCreate}
                     >
                         Create Task
@@ -204,10 +248,13 @@ const CreateTaskModal = ({
 
                 </div>
 
+
             </div>
 
         </div>
+
     );
+
 };
 
 export default CreateTaskModal;
