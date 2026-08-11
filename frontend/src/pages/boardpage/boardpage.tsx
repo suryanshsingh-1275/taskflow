@@ -1,11 +1,8 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Column from "../../components/Column";
+import api from "../../api/axios";
 
-interface BoardPageProps {
-    title?: string;
-    description?: string;
-}
 
 interface Task {
     id: string;
@@ -14,7 +11,9 @@ interface Task {
     priority: string;
     dueDate: string;
     assignee: string;
+    status: string;
 }
+
 
 interface ColumnData {
     id: string;
@@ -22,14 +21,22 @@ interface ColumnData {
     tasks: Task[];
 }
 
-const BoardPage = ({
-    title = "TaskFlow Board",
-    description = "Project Management",
-}: BoardPageProps) => {
+
+interface Board {
+    id: string;
+    title: string;
+    description: string;
+}
+
+
+const BoardPage = () => {
 
     const { id } = useParams();
 
-    const columns: ColumnData[] = [
+
+    const [board, setBoard] = useState<Board | null>(null);
+
+    const [columns, setColumns] = useState<ColumnData[]>([
         {
             id: "todo",
             title: "Todo",
@@ -53,27 +60,107 @@ const BoardPage = ({
             title: "Done",
             tasks: [],
         },
-    ];
+    ]);
 
-    console.log("Board ID:", id);
+
+    const [loading, setLoading] = useState(true);
+
+
+    useEffect(() => {
+
+        const fetchBoard = async () => {
+
+            try {
+
+                if (!id) {
+                    return;
+                }
+
+
+                const res = await api.get(
+                    `/boards/${id}`
+                );
+
+
+                console.log(
+                    "Board Response:",
+                    res.data
+                );
+
+
+                setBoard(res.data.board);
+
+
+                /*
+                    Later we'll get tasks from the
+                    backend response and distribute
+                    them into these four columns.
+                */
+
+            } catch (error) {
+
+                console.error(
+                    "Failed to fetch board:",
+                    error
+                );
+
+            } finally {
+
+                setLoading(false);
+
+            }
+
+        };
+
+
+        fetchBoard();
+
+    }, [id]);
+
+
+    if (loading) {
+
+        return (
+            <div className="loading">
+                Loading board...
+            </div>
+        );
+
+    }
+
+
+    if (!board) {
+
+        return (
+            <div className="no-board">
+                Board not found
+            </div>
+        );
+
+    }
+
 
     return (
 
         <div className="board-page-container">
+
+
+            {/* Board Header */}
 
             <div className="board-page-header">
 
                 <div className="board-page-info">
 
                     <h1 className="board-page-title">
-                        {title}
+                        {board.title}
                     </h1>
 
                     <p className="board-page-description">
-                        {description}
+                        {board.description}
                     </p>
 
                 </div>
+
 
                 <div className="board-page-actions">
 
@@ -89,6 +176,8 @@ const BoardPage = ({
 
             </div>
 
+
+            {/* Columns */}
 
             <div className="columns-container">
 
@@ -108,10 +197,12 @@ const BoardPage = ({
 
             </div>
 
+
         </div>
 
     );
 
 };
+
 
 export default BoardPage;
