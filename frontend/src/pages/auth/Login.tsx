@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import api from "../../api/axios";
 
 const Login = () => {
+
+    const navigate = useNavigate();
 
     const [isPhoneLogin, setIsPhoneLogin] = useState(false);
 
@@ -10,17 +12,22 @@ const Login = () => {
     const [phone, setPhone] = useState("");
     const [password, setPassword] = useState("");
 
+
     const handleSubmit = async (
         e: React.FormEvent<HTMLFormElement>
     ) => {
 
         e.preventDefault();
 
+
+        
+
         if (isPhoneLogin) {
 
             if (phone === "" || password === "") {
 
                 console.log("Please fill all fields");
+
                 return;
 
             }
@@ -30,37 +37,67 @@ const Login = () => {
             if (email === "" || password === "") {
 
                 console.log("Please fill all fields");
+
                 return;
 
             }
 
         }
 
+
         try {
 
-            const res = await axios.post(
-                "http://localhost:5000/login",
+            
+
+            const res = await api.post(
+                "/auth/login",
                 {
-                    email,
-                    phone,
+                    email: isPhoneLogin ? "" : email,
+                    phone: isPhoneLogin ? phone : "",
                     password,
                 }
             );
 
+
+            console.log("Login response:");
             console.log(res.data);
+
             console.log("Login Successful");
 
-            // localStorage.setItem("token", res.data.token);
-            // navigate("/dashboard");
 
-        } catch (err) {
+            // Store JWT token
 
-            console.error(err);
-            console.log("Login Failed");
+            localStorage.setItem(
+                "token",
+                res.data.token
+            );
+
+
+            // Store user information
+
+            localStorage.setItem(
+                "user",
+                JSON.stringify(res.data.user)
+            );
+
+
+            
+            navigate("/dashboard");
+
+
+        } catch (err: any) {
+
+            console.error("Login Error:", err);
+
+            console.log(
+                err.response?.data?.message ||
+                "Login Failed"
+            );
 
         }
 
     };
+
 
     return (
 
@@ -72,34 +109,48 @@ const Login = () => {
                     Welcome Back
                 </h1>
 
+
                 <p className="login-subtitle">
                     Login to continue
                 </p>
+
+
 
                 <div className="toggle-div">
 
                     <button
                         className="toggle-button"
                         type="button"
-                        onClick={() => setIsPhoneLogin(!isPhoneLogin)}
+                        onClick={() =>
+                            setIsPhoneLogin(!isPhoneLogin)
+                        }
                     >
+
                         {
                             isPhoneLogin
                                 ? "Login with Email"
                                 : "Login with Phone"
                         }
+
                     </button>
 
                 </div>
+
+
+               
 
                 <form
                     className="login-form"
                     onSubmit={handleSubmit}
                 >
 
-                    {
 
-                        isPhoneLogin ?
+                    
+
+                    {
+                        isPhoneLogin
+
+                            ?
 
                             <div className="form-group">
 
@@ -112,12 +163,14 @@ const Login = () => {
                                     type="tel"
                                     placeholder="Enter Phone Number"
                                     value={phone}
-                                    onChange={(e) => setPhone(e.target.value)}
+                                    onChange={(e) =>
+                                        setPhone(e.target.value)
+                                    }
                                 />
 
                             </div>
 
-                        :
+                            :
 
                             <div className="form-group">
 
@@ -130,12 +183,16 @@ const Login = () => {
                                     type="email"
                                     placeholder="Enter Email"
                                     value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
+                                    onChange={(e) =>
+                                        setEmail(e.target.value)
+                                    }
                                 />
 
                             </div>
-
                     }
+
+
+                    
 
                     <div className="form-group">
 
@@ -148,10 +205,15 @@ const Login = () => {
                             type="password"
                             placeholder="Enter Password"
                             value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            onChange={(e) =>
+                                setPassword(e.target.value)
+                            }
                         />
 
                     </div>
+
+
+                    
 
                     <div className="button-div">
 
@@ -164,7 +226,11 @@ const Login = () => {
 
                     </div>
 
+
                 </form>
+
+
+               
 
                 <div className="signup-div">
 
@@ -180,6 +246,7 @@ const Login = () => {
                     </Link>
 
                 </div>
+
 
             </div>
 
