@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import api from "../../api/axios";
 
 const Signup = () => {
+
+    const navigate = useNavigate();
 
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
@@ -38,8 +40,8 @@ const Signup = () => {
 
         try {
 
-            const res = await axios.post(
-                "http://localhost:5000/signup",
+            const res = await api.post(
+                "/auth/signup",
                 {
                     name,
                     email,
@@ -52,6 +54,7 @@ const Signup = () => {
             console.log("Account Created Successfully");
 
             // navigate("/login");
+            navigate("/login");
 
         } catch (err) {
 
