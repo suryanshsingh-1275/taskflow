@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import BoardCard from "../../components/BoardCard";
 import CreateBoardModel from "../../components/CreateBoardModel";
 import { useState } from "react";
+import api from "../../api/axios";
 
 interface Board {
 
@@ -27,19 +28,47 @@ const Dashboard = () => {
     board.title.toLowerCase().includes(search.toLowerCase())
     );
 
-     const handleCreateBoard = (
-        title: string,
-        description: string,
-        visibility: string
-    ) => {
+    const handleCreateBoard = async (
+    title: string,
+    description: string,
+    visibility: string
+) => {
 
-        console.log("Board Created:");
-        console.log(title);
-        console.log(description);
-        console.log(visibility);
+    try {
+
+        const res = await api.post(
+            "/boards",
+            {
+                title,
+                description,
+                visibility
+            }
+        );
+
+        console.log(
+            "Board Created:",
+            res.data
+        );
+
+        const newBoard = res.data.board;
+
+        setBoards((prevBoards) => [
+            newBoard,
+            ...prevBoards
+        ]);
 
         setShowCreateBoard(false);
-    };
+
+    } catch (error) {
+
+        console.error(
+            "Create Board Error:",
+            error
+        );
+
+    }
+
+};
     
 
     return (

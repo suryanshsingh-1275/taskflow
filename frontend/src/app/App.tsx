@@ -1,7 +1,11 @@
 import "../App.css";
 
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-
+import {
+    BrowserRouter,
+    Routes,
+    Route,
+    Navigate
+} from "react-router-dom";
 
 import Login from "../pages/auth/Login";
 import Signup from "../pages/auth/Signup";
@@ -52,7 +56,10 @@ const App = () => {
                     element={<Profile />}
                 />
 
-                
+                <Route
+                    path="/calendar"
+                    element={<Calendar />}
+                />
 
                 <Route
                     path="/analytics"
@@ -63,8 +70,8 @@ const App = () => {
                 {/* Default */}
 
                 <Route
-                    path="*"
-                    element={<Dashboard />}
+                    path="/"
+                    element={<Navigate to="/login" />}
                 />
 
             </Routes>
@@ -74,5 +81,6 @@ const App = () => {
     );
 
 };
+
 
 export default App;
