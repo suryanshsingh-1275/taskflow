@@ -1,21 +1,24 @@
 import React, { useState } from "react";
 import EditTaskModal from "./EditTaskModal";
+import api from "../api/axios";
 
 interface Task {
-    id: string;
+    _id: string;
     title: string;
     description: string;
     priority: string;
-    dueDate: string;
-    assignee: string;
+    dueDate: string | null;
+    assignee: string | null;
 }
 
 interface TaskCardProps {
     task: Task;
+    onTaskChanged: () => void;
 }
 
 const TaskCard = ({
     task,
+    onTaskChanged,
 }: TaskCardProps) => {
 
     const [showMenu, setShowMenu] = useState(false);
@@ -32,18 +35,59 @@ const TaskCard = ({
     };
 
 
-    const handleEdit = (updatedTask: Task) => {
+    
+    // EDIT  (PUT /tasks/:id)
+   
 
-        console.log("Updated Task:");
-        console.log(updatedTask);
+    const handleEdit = async (updatedTask: {
+        title: string;
+        description: string;
+        priority: string;
+        dueDate: string | null;
+        assignee: string | null;
+    }) => {
+
+        try {
+
+            await api.put(
+                `/tasks/${task._id}`,
+                {
+                    title: updatedTask.title,
+                    description: updatedTask.description,
+                    priority: updatedTask.priority,
+                    dueDate: updatedTask.dueDate || null,
+                    assignee: updatedTask.assignee || null,
+                }
+            );
+
+            onTaskChanged();
+
+        } catch (error) {
+
+            console.error("Update Task Error:", error);
+
+        }
 
     };
 
 
-    const handleDelete = (taskId: string) => {
+    
+    // DELETE  (DELETE /tasks/:id)
 
-        console.log("Delete Task:");
-        console.log(taskId);
+
+    const handleDelete = async () => {
+
+        try {
+
+            await api.delete(`/tasks/${task._id}`);
+
+            onTaskChanged();
+
+        } catch (error) {
+
+            console.error("Delete Task Error:", error);
+
+        }
 
     };
 
@@ -85,7 +129,7 @@ const TaskCard = ({
 
                             <button
                                 onClick={() => {
-                                    handleDelete(task.id);
+                                    handleDelete();
                                     setShowMenu(false);
                                 }}
                             >
@@ -128,7 +172,7 @@ const TaskCard = ({
                             </span>
 
                             <span>
-                                {task.dueDate}
+                                {task.dueDate || "No due date"}
                             </span>
 
                         </div>
@@ -141,7 +185,7 @@ const TaskCard = ({
                             </span>
 
                             <span>
-                                {task.assignee}
+                                {task.assignee || "Unassigned"}
                             </span>
 
                         </div>

@@ -3,13 +3,14 @@ import TaskCard from "./TaskCard";
 import CreateTaskModal from "./CreateTaskModel";
 import api from "../api/axios";
 
+
 interface Task {
-    id: string;
+    _id: string;
     title: string;
     description: string;
     priority: string;
-    dueDate: string;
-    assignee: string;
+    dueDate: string | null;
+    assignee: string | null;
     column: string;
 }
 
@@ -27,7 +28,7 @@ interface ColumnProps {
     tasks: Task[];
     boardId: string;
 
-    // Called after task is successfully created
+    
     onTaskCreated: () => void;
 }
 
@@ -57,15 +58,11 @@ const Column = ({
                     priority: task.priority,
                     dueDate: task.dueDate || null,
 
-                    // Important:
-                    // Backend expects ObjectId for assignee.
-                    // If you're not assigning a user yet,
-                    // send null instead of an empty string.
                     assignee: task.assignee || null,
 
                     board: boardId,
 
-                    // Your schema calls this "column"
+                    
                     column: id,
                 }
             );
@@ -151,8 +148,9 @@ const Column = ({
                         tasks.map((task) => (
 
                             <TaskCard
-                                key={task.id}
+                                key={task._id}
                                 task={task}
+                                onTaskChanged={onTaskCreated}
                             />
 
                         ))
