@@ -1,13 +1,9 @@
 import React, { useState } from "react";
 
 interface Board {
-    id: number;
+    _id: string;
     title: string;
     description: string;
-    members: number;
-    tasks: number;
-    completedTasks: number;
-    favorite: boolean;
     visibility: string;
 }
 
@@ -17,9 +13,13 @@ interface EditBoardModalProps {
 
     onClose: () => void;
 
-    onEdit: (updatedBoard: Board) => void;
+    onEdit: (updatedBoard: {
+        title: string;
+        description: string;
+        visibility: string;
+    }) => void;
 
-    onDelete: (boardId: number) => void;
+    onDelete: () => void;
 }
 
 const EditBoardModal = ({
@@ -42,17 +42,11 @@ const EditBoardModal = ({
             return;
         }
 
-        const updatedBoard: Board = {
-            ...board,
+        onEdit({
             title,
             description,
             visibility,
-        };
-
-        console.log("Board Edited:");
-        console.log(updatedBoard);
-
-        onEdit(updatedBoard);
+        });
 
         onClose();
     };
@@ -60,10 +54,7 @@ const EditBoardModal = ({
 
     const handleDelete = () => {
 
-        console.log("Deleting Board:");
-        console.log(board.id);
-
-        onDelete(board.id);
+        onDelete();
 
         onClose();
     };

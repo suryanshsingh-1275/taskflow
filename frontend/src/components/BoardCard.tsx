@@ -1,25 +1,44 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import EditBoardModal from "./EditBoardModal";
+import api from "../api/axios";
 
 interface BoardCardProps {
-    id: number;
+
+    _id: string;
     title: string;
     description: string;
-    members: number;
-    tasks: number;
-    completedTasks: number;
+
+    members: string[];
+
+    
+    
+    tasks?: number;
+    completedTasks?: number;
+
     favorite: boolean;
+    archived: boolean;
+    visibility: string;
+
+    
+    onBoardUpdated: (updatedBoard: any) => void;
+
+    
+    onBoardDeleted: (boardId: string) => void;
 }
 
 const BoardCard = ({
-    id,
+    _id,
     title,
     description,
     members,
-    tasks,
-    completedTasks,
+    tasks = 0,
+    completedTasks = 0,
     favorite,
+    archived,
+    visibility,
+    onBoardUpdated,
+    onBoardDeleted,
 }: BoardCardProps) => {
 
     const navigate = useNavigate();
@@ -44,34 +63,95 @@ const BoardCard = ({
     };
 
 
-    const handleEdit = (updatedBoard: BoardCardProps) => {
+    
 
-        console.log("Updated Board:");
-        console.log(updatedBoard);
+    const handleEdit = async (updatedBoard: {
+        title: string;
+        description: string;
+        visibility: string;
+    }) => {
+
+        try {
+
+            const res = await api.put(
+                `/boards/${_id}`,
+                {
+                    title: updatedBoard.title,
+                    description: updatedBoard.description,
+                    visibility: updatedBoard.visibility,
+                }
+            );
+
+            onBoardUpdated(res.data.board);
+
+        } catch (error) {
+
+            console.error("Edit Board Error:", error);
+
+        }
 
     };
 
 
-    const handleDelete = (boardId: number) => {
+    // DELETE  (DELETE /boards/:id)
 
-        console.log("Delete Board:");
-        console.log(boardId);
+    const handleDelete = async () => {
+
+        try {
+
+            await api.delete(`/boards/${_id}`);
+
+            onBoardDeleted(_id);
+
+        } catch (error) {
+
+            console.error("Delete Board Error:", error);
+
+        }
 
     };
 
 
-    const handleFavorite = (boardId: number) => {
+    // FAVORITE  (PUT /boards/:id with { favorite })
 
-        console.log("Favorite Board:");
-        console.log(boardId);
+    const handleFavorite = async () => {
+
+        try {
+
+            const res = await api.put(
+                `/boards/${_id}`,
+                { favorite: !favorite }
+            );
+
+            onBoardUpdated(res.data.board);
+
+        } catch (error) {
+
+            console.error("Favorite Board Error:", error);
+
+        }
 
     };
 
 
-    const handleArchive = (boardId: number) => {
+    // ARCHIVE  (PUT /boards/:id with { archived })
 
-        console.log("Archive Board:");
-        console.log(boardId);
+    const handleArchive = async () => {
+
+        try {
+
+            const res = await api.put(
+                `/boards/${_id}`,
+                { archived: !archived }
+            );
+
+            onBoardUpdated(res.data.board);
+
+        } catch (error) {
+
+            console.error("Archive Board Error:", error);
+
+        }
 
     };
 
@@ -82,7 +162,7 @@ const BoardCard = ({
 
             <div
                 className="board-card"
-                onClick={() => navigate(`/board/${id}`)}
+                onClick={() => navigate(`/board/${_id}`)}
             >
 
                 <div className="board-header">
@@ -108,7 +188,7 @@ const BoardCard = ({
                     <div className="board-info">
 
                         <p>
-                            👥 {members} Members
+                            👥 {members.length} Members
                         </p>
 
                         <p>
@@ -170,27 +250,27 @@ const BoardCard = ({
 
                                 <button
                                     onClick={() => {
-                                        handleFavorite(id);
+                                        handleFavorite();
                                         setShowMenu(false);
                                     }}
                                 >
-                                    Favorite
+                                    {favorite ? "Unfavorite" : "Favorite"}
                                 </button>
 
 
                                 <button
                                     onClick={() => {
-                                        handleArchive(id);
+                                        handleArchive();
                                         setShowMenu(false);
                                     }}
                                 >
-                                    Archive
+                                    {archived ? "Unarchive" : "Archive"}
                                 </button>
 
 
                                 <button
                                     onClick={() => {
-                                        handleDelete(id);
+                                        handleDelete();
                                         setShowMenu(false);
                                     }}
                                 >
@@ -212,14 +292,10 @@ const BoardCard = ({
                 isOpen={showEditModal}
 
                 board={{
-                    id,
+                    _id,
                     title,
                     description,
-                    members,
-                    tasks,
-                    completedTasks,
-                    favorite,
-                    visibility: "Private",
+                    visibility,
                 }}
 
                 onClose={() => setShowEditModal(false)}
@@ -235,4 +311,4 @@ const BoardCard = ({
     );
 };
 
-export default BoardCard; 
+export default BoardCard;
