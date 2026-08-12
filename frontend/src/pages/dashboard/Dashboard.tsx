@@ -1,19 +1,18 @@
 import { useNavigate } from "react-router-dom";
 import BoardCard from "../../components/BoardCard";
 import CreateBoardModel from "../../components/CreateBoardModel";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import api from "../../api/axios";
 
-interface Board {
 
-    id: number;
+interface Board {
+    _id: string;
     title: string;
     description: string;
-    members: number;
-    tasks: number;
-    completedTasks: number;
+    members: string[];
+    visibility: string;
     favorite: boolean;
-
+    archived: boolean;
 }
 
 const Dashboard = () => {
@@ -24,52 +23,108 @@ const Dashboard = () => {
 
     const [boards, setBoards] = useState<Board[]>([]);
 
+
+    
+
+    useEffect(() => {
+
+        const fetchBoards = async () => {
+
+            try {
+
+                const res = await api.get("/boards");
+
+                setBoards(res.data.boards);
+
+            } catch (error) {
+
+                console.error(
+                    "Fetch Boards Error:",
+                    error
+                );
+
+            }
+
+        };
+
+        fetchBoards();
+
+    }, []);
+
+
+    
     const filteredBoards = boards.filter((board) =>
-    board.title.toLowerCase().includes(search.toLowerCase())
+        !board.archived &&
+        board.title.toLowerCase().includes(search.toLowerCase())
     );
 
+
     const handleCreateBoard = async (
-    title: string,
-    description: string,
-    visibility: string
-) => {
+        title: string,
+        description: string,
+        visibility: string
+    ) => {
 
-    try {
+        try {
 
-        const res = await api.post(
-            "/boards",
-            {
-                title,
-                description,
-                visibility
-            }
+            const res = await api.post(
+                "/boards",
+                {
+                    title,
+                    description,
+                    visibility
+                }
+            );
+
+            console.log(
+                "Board Created:",
+                res.data
+            );
+
+            const newBoard = res.data.board;
+
+            setBoards((prevBoards) => [
+                newBoard,
+                ...prevBoards
+            ]);
+
+            setShowCreateBoard(false);
+
+        } catch (error) {
+
+            console.error(
+                "Create Board Error:",
+                error
+            );
+
+        }
+
+    };
+
+
+   
+    const handleBoardUpdated = (updatedBoard: Board) => {
+
+        setBoards((prevBoards) =>
+            prevBoards.map((board) =>
+                board._id === updatedBoard._id
+                    ? updatedBoard
+                    : board
+            )
         );
 
-        console.log(
-            "Board Created:",
-            res.data
+    };
+
+
+    // Called by BoardCard after a successful delete.
+    const handleBoardDeleted = (boardId: string) => {
+
+        setBoards((prevBoards) =>
+            prevBoards.filter((board) => board._id !== boardId)
         );
 
-        const newBoard = res.data.board;
+    };
 
-        setBoards((prevBoards) => [
-            newBoard,
-            ...prevBoards
-        ]);
-
-        setShowCreateBoard(false);
-
-    } catch (error) {
-
-        console.error(
-            "Create Board Error:",
-            error
-        );
-
-    }
-
-};
-    
 
     return (
 
@@ -152,15 +207,15 @@ const Dashboard = () => {
 
                     <button
                         className="create-board-button"
-                        onClick={()=>setShowCreateBoard(true)}
+                        onClick={() => setShowCreateBoard(true)}
                     >
                         + Create Board
                     </button>
 
                     <CreateBoardModel
-                     isOpen={showCreateBoard}
-                     onClose={() => setShowCreateBoard(false)}
-                     onCreate={handleCreateBoard}
+                        isOpen={showCreateBoard}
+                        onClose={() => setShowCreateBoard(false)}
+                        onCreate={handleCreateBoard}
                     />
 
                     <input
@@ -168,7 +223,7 @@ const Dashboard = () => {
                         type="text"
                         placeholder="Search Boards..."
                         value={search}
-                        onChange={(e)=>setSearch(e.target.value)}
+                        onChange={(e) => setSearch(e.target.value)}
                     />
 
                 </div>
@@ -197,9 +252,9 @@ const Dashboard = () => {
 
                                 <BoardCard
 
-                                    key={board.id}
+                                    key={board._id}
 
-                                    id={board.id}
+                                    _id={board._id}
 
                                     title={board.title}
 
@@ -207,11 +262,15 @@ const Dashboard = () => {
 
                                     members={board.members}
 
-                                    tasks={board.tasks}
-
-                                    completedTasks={board.completedTasks}
-
                                     favorite={board.favorite}
+
+                                    archived={board.archived}
+
+                                    visibility={board.visibility}
+
+                                    onBoardUpdated={handleBoardUpdated}
+
+                                    onBoardDeleted={handleBoardDeleted}
 
                                 />
 
