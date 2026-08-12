@@ -1,71 +1,123 @@
-import React, { useEffect, useState } from "react";
+import {
+    useCallback,
+    useEffect,
+    useState,
+} from "react";
+
 import { useParams } from "react-router-dom";
+
 import Column from "../../components/Column";
+
 import api from "../../api/axios";
 
+
+// TASK INTERFACE
+
 interface Task {
+
     _id: string;
+
     title: string;
+
     description: string;
+
     priority: string;
+
     dueDate: string | null;
+
     assignee: string | null;
+
     column: "todo" | "progress" | "review" | "done";
+
 }
+
+
+// COLUMN INTERFACE
 
 interface ColumnData {
+
     id: "todo" | "progress" | "review" | "done";
+
     title: string;
+
     tasks: Task[];
+
 }
 
+
+// BOARD INTERFACE
+
 interface Board {
+
     _id: string;
+
     title: string;
+
     description: string;
+
 }
+
+
+// COMPONENT
 
 const BoardPage = () => {
 
     const { id } = useParams<{ id: string }>();
 
-    const [board, setBoard] = useState<Board | null>(null);
 
-    const [columns, setColumns] = useState<ColumnData[]>([
-        {
-            id: "todo",
-            title: "Todo",
-            tasks: [],
-        },
-        {
-            id: "progress",
-            title: "In Progress",
-            tasks: [],
-        },
-        {
-            id: "review",
-            title: "Review",
-            tasks: [],
-        },
-        {
-            id: "done",
-            title: "Done",
-            tasks: [],
-        },
-    ]);
+    
+    // BOARD STATE
 
-    const [loading, setLoading] = useState(true);
+    const [board, setBoard] =
+        useState<Board | null>(null);
 
 
-    // ==========================================
+    // COLUMNS STATE
+
+    const [columns, setColumns] =
+        useState<ColumnData[]>([
+
+            {
+                id: "todo",
+                title: "Todo",
+                tasks: [],
+            },
+
+            {
+                id: "progress",
+                title: "In Progress",
+                tasks: [],
+            },
+
+            {
+                id: "review",
+                title: "Review",
+                tasks: [],
+            },
+
+            {
+                id: "done",
+                title: "Done",
+                tasks: [],
+            },
+
+        ]);
+
+
+    // LOADING
+
+    const [loading, setLoading] =
+        useState(true);
+
+
     // FETCH TASKS
-    // ==========================================
 
-    const fetchTasks = async () => {
+    const fetchTasks = useCallback(async () => {
 
         if (!id) {
             return;
         }
+
 
         try {
 
@@ -73,47 +125,62 @@ const BoardPage = () => {
                 `/tasks/board/${id}`
             );
 
+
             console.log(
                 "Tasks Response:",
                 res.data
             );
 
+
             const tasks: Task[] =
                 res.data.tasks || [];
 
+
+            // DISTRIBUTE TASKS INTO COLUMNS
 
             setColumns([
 
                 {
                     id: "todo",
+
                     title: "Todo",
+
                     tasks: tasks.filter(
                         (task) =>
                             task.column === "todo"
                     ),
                 },
 
+
                 {
                     id: "progress",
+
                     title: "In Progress",
+
                     tasks: tasks.filter(
                         (task) =>
                             task.column === "progress"
                     ),
                 },
 
+
                 {
                     id: "review",
+
                     title: "Review",
+
                     tasks: tasks.filter(
                         (task) =>
                             task.column === "review"
                     ),
                 },
 
+
                 {
                     id: "done",
+
                     title: "Done",
+
                     tasks: tasks.filter(
                         (task) =>
                             task.column === "done"
@@ -121,6 +188,7 @@ const BoardPage = () => {
                 },
 
             ]);
+
 
         } catch (error) {
 
@@ -131,50 +199,71 @@ const BoardPage = () => {
 
         }
 
-    };
+    }, [id]);
 
 
-    // ==========================================
+    // FETCH BOARD
+
+    const fetchBoard = useCallback(async () => {
+
+        if (!id) {
+            return;
+        }
+
+
+        try {
+
+            const res = await api.get(
+                `/boards/${id}`
+            );
+
+
+            console.log(
+                "Board Response:",
+                res.data
+            );
+
+
+            setBoard(
+                res.data.board
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "Failed to fetch board:",
+                error
+            );
+
+        }
+
+    }, [id]);
+
+
     // FETCH BOARD + TASKS
-    // ==========================================
 
     useEffect(() => {
 
         const fetchBoardData = async () => {
 
+            setLoading(true);
+
+
             try {
 
-                if (!id) {
-                    return;
-                }
-
-
-                // GET BOARD
-
-                const boardRes = await api.get(
-                    `/boards/${id}`
-                );
-
-                console.log(
-                    "Board Response:",
-                    boardRes.data
-                );
-
-                setBoard(
-                    boardRes.data.board
-                );
-
-
-                // GET TASKS
+                await fetchBoard();
 
                 await fetchTasks();
+
 
             } catch (error) {
 
                 console.error(
-                    "Failed to fetch board:",
+                    "Failed to fetch board data:",
                     error
                 );
+
 
             } finally {
 
@@ -187,60 +276,71 @@ const BoardPage = () => {
 
         fetchBoardData();
 
-    }, [id]);
+    }, [
+        fetchBoard,
+        fetchTasks
+    ]);
 
 
-    // ==========================================
     // LOADING
-    // ==========================================
 
     if (loading) {
 
         return (
+
             <div className="loading">
+
                 Loading board...
+
             </div>
+
         );
 
     }
 
 
-    // ==========================================
     // BOARD NOT FOUND
-    // ==========================================
 
     if (!board) {
 
         return (
+
             <div className="no-board">
+
                 Board not found
+
             </div>
+
         );
 
     }
 
 
-    // ==========================================
-    // UI
-    // ==========================================
+    
 
     return (
 
         <div className="board-page-container">
 
 
-            {/* BOARD HEADER */}
+            
 
             <div className="board-page-header">
+
 
                 <div className="board-page-info">
 
                     <h1 className="board-page-title">
+
                         {board.title}
+
                     </h1>
 
+
                     <p className="board-page-description">
+
                         {board.description}
+
                     </p>
 
                 </div>
@@ -250,16 +350,15 @@ const BoardPage = () => {
 
                     <button
                         className="board-search-button"
+                        type="button"
                     >
                         Search
                     </button>
 
+
                     <button
                         className="add-task-button"
-                        onClick={() => {
-                            // We will handle this later
-                            // through the column modal.
-                        }}
+                        type="button"
                     >
                         + Add Task
                     </button>
@@ -269,11 +368,12 @@ const BoardPage = () => {
             </div>
 
 
-            {/* COLUMNS */}
+            
 
             <div className="columns-container">
 
                 {
+
                     columns.map((column) => (
 
                         <Column
@@ -293,6 +393,7 @@ const BoardPage = () => {
                         />
 
                     ))
+
                 }
 
             </div>
@@ -303,5 +404,6 @@ const BoardPage = () => {
     );
 
 };
+
 
 export default BoardPage;
