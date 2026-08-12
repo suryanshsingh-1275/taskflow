@@ -1,12 +1,12 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 interface Task {
-    id: string;
+    _id: string;
     title: string;
     description: string;
     priority: string;
-    dueDate: string;
-    assignee: string;
+    dueDate: string | null;
+    assignee: string | null;
 }
 
 interface EditTaskModalProps {
@@ -15,9 +15,15 @@ interface EditTaskModalProps {
 
     onClose: () => void;
 
-    onEdit: (updatedTask: Task) => void;
+    onEdit: (updatedTask: {
+        title: string;
+        description: string;
+        priority: string;
+        dueDate: string | null;
+        assignee: string | null;
+    }) => void;
 
-    onDelete: (taskId: string) => void;
+    onDelete: () => void;
 }
 
 const EditTaskModal = ({
@@ -31,8 +37,10 @@ const EditTaskModal = ({
     const [title, setTitle] = useState(task.title);
     const [description, setDescription] = useState(task.description);
     const [priority, setPriority] = useState(task.priority);
-    const [dueDate, setDueDate] = useState(task.dueDate);
-    const [assignee, setAssignee] = useState(task.assignee);
+
+   
+    const [dueDate, setDueDate] = useState(task.dueDate ?? "");
+    const [assignee, setAssignee] = useState(task.assignee ?? "");
 
     const handleEdit = () => {
 
@@ -41,29 +49,20 @@ const EditTaskModal = ({
             return;
         }
 
-        const updatedTask: Task = {
-            id: task.id,
+        onEdit({
             title,
             description,
             priority,
-            dueDate,
-            assignee,
-        };
-
-        console.log("Task Edited:");
-        console.log(updatedTask);
-
-        onEdit(updatedTask);
+            dueDate: dueDate || null,
+            assignee: assignee || null,
+        });
 
         onClose();
     };
 
     const handleDelete = () => {
 
-        console.log("Deleting Task:");
-        console.log(task.id);
-
-        onDelete(task.id);
+        onDelete();
 
         onClose();
     };
