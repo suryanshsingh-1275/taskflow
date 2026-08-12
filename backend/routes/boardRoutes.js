@@ -8,7 +8,6 @@ import {
 } from "../controllers/boardController.js";
 
 import authMiddleware from "../middleware/authMiddleware.js";
-import roleMiddleware from "../middleware/roleMiddleware.js";
 
 
 const router = express.Router();
@@ -38,7 +37,6 @@ router.get(
 router.put(
     "/:id",
     authMiddleware,
-    roleMiddleware("admin"),
     updateBoard
 );
 
@@ -46,7 +44,6 @@ router.put(
 router.delete(
     "/:id",
     authMiddleware,
-    roleMiddleware("admin"),
     deleteBoard
 );
 
