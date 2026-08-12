@@ -1,48 +1,38 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../../api/axios";
 import BoardCard from "../../components/BoardCard";
 
-interface ArchivedBoard {
-
-    id: number;
-
+interface Board {
+    _id: string;
     title: string;
-
     description: string;
-
-    members: number;
-
-    tasks: number;
-
-    completedTasks: number;
-
+    members: string[];
+    visibility: string;
     favorite: boolean;
-
+    archived: boolean;
 }
 
 const Archived = () => {
 
-    const [archivedBoards, setArchivedBoards] = useState<ArchivedBoard[]>([]);
+    const [boards, setBoards] = useState<Board[]>([]);
 
+    
     useEffect(() => {
 
         const fetchArchivedBoards = async () => {
 
             try {
 
-                // Later
+                const res = await api.get("/boards");
 
-                // const res = await axios.get("http://localhost:5000/boards/archived");
+                setBoards(res.data.boards);
 
-                // setArchivedBoards(res.data);
+            } catch (error) {
 
-                console.log("Fetch Archived Boards");
-
-            }
-
-            catch (err) {
-
-                console.error(err);
+                console.error(
+                    "Fetch Archived Boards Error:",
+                    error
+                );
 
             }
 
@@ -51,6 +41,41 @@ const Archived = () => {
         fetchArchivedBoards();
 
     }, []);
+
+
+    const archivedBoards = boards.filter((board) => board.archived);
+
+
+    const handleBoardUpdated = (updatedBoard: Board) => {
+
+       
+        if (!updatedBoard.archived) {
+
+            setBoards((prev) =>
+                prev.filter((board) => board._id !== updatedBoard._id)
+            );
+
+            return;
+
+        }
+
+        setBoards((prev) =>
+            prev.map((board) =>
+                board._id === updatedBoard._id ? updatedBoard : board
+            )
+        );
+
+    };
+
+
+    const handleBoardDeleted = (boardId: string) => {
+
+        setBoards((prev) =>
+            prev.filter((board) => board._id !== boardId)
+        );
+
+    };
+
 
     return (
 
@@ -88,7 +113,9 @@ const Archived = () => {
 
                             <BoardCard
 
-                                key={board.id}
+                                key={board._id}
+
+                                _id={board._id}
 
                                 title={board.title}
 
@@ -96,11 +123,15 @@ const Archived = () => {
 
                                 members={board.members}
 
-                                tasks={board.tasks}
-
-                                completedTasks={board.completedTasks}
-
                                 favorite={board.favorite}
+
+                                archived={board.archived}
+
+                                visibility={board.visibility}
+
+                                onBoardUpdated={handleBoardUpdated}
+
+                                onBoardDeleted={handleBoardDeleted}
 
                             />
 
