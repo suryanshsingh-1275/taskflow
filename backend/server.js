@@ -7,6 +7,9 @@ import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import boardRoutes from "./routes/boardRoutes.js";
 import taskRoutes from "./routes/taskRoutes.js";
+import analyticsRoutes from "./routes/analyticsRoutes.js";
+
+
 
 dotenv.config();
 
@@ -20,6 +23,7 @@ connectDB();
 app.use("/api/auth",authRoutes);
 app.use("/api/boards",boardRoutes);
 app.use("/api/tasks",taskRoutes);
+app.use("/api/analytics",analyticsRoutes);
 
 const PORT = process.env.PORT || 5000;
 
