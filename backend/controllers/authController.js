@@ -1,4 +1,6 @@
 import User from "../models/User.js";
+import Board from "../models/Board.js";
+import Task from "../models/Task.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -204,6 +206,81 @@ export const login = async (req, res) => {
     } catch (error) {
 
         console.error(error);
+
+        res.status(500).json({
+            message: "Server error"
+        });
+
+    }
+
+};
+
+
+
+export const getProfile = async (req, res) => {
+
+    try {
+
+        const user = await User.findById(
+            req.user.userId
+        ).select("-password");
+
+        if (!user) {
+
+            return res.status(404).json({
+                message: "User not found"
+            });
+
+        }
+
+
+        // Boards owned by this user
+
+        const boards = await Board.find({
+            owner: req.user.userId
+        });
+
+        const totalBoards = boards.length;
+
+        const favoriteBoards = boards.filter(
+            (board) => board.favorite
+        ).length;
+
+        const boardIds = boards.map(
+            (board) => board._id
+        );
+
+
+        // Tasks that belong to any of those boards, sitting in "done"
+
+        const completedTasks = await Task.countDocuments({
+            board: { $in: boardIds },
+            column: "done"
+        });
+
+
+        res.status(200).json({
+
+            user: {
+                _id: user._id,
+                name: user.name,
+                age: user.age,
+                email: user.email,
+                phone: user.phone,
+                photo: user.avatar,
+                bio: user.bio,
+                role: user.role,
+                joinedOn: user.createdAt,
+                totalBoards,
+                completedTasks,
+                favoriteBoards,
+            }
+
+        });
+
+    } catch (error) {
+
+        console.error("Get Profile Error:", error);
 
         res.status(500).json({
             message: "Server error"
