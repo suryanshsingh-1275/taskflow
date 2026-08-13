@@ -264,3 +264,21 @@ export const deleteTask = async (req, res) => {
     }
 
 };
+
+
+export const getMyTasks = async (req, res) => {
+    try {
+        const boards = await Board.find({ owner: req.user.userId }).select("_id");
+        const boardIds = boards.map((b) => b._id);
+
+        const tasks = await Task.find({
+            board: { $in: boardIds },
+            dueDate: { $ne: null },
+        }).sort({ dueDate: 1 });
+
+        res.status(200).json({ tasks });
+    } catch (error) {
+        console.error("Get My Tasks Error:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
