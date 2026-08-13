@@ -4,7 +4,8 @@ import {
     getBoardTasks,
     getTask,
     updateTask,
-    deleteTask
+    deleteTask,
+    getMyTasks
 } from "../controllers/taskController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
@@ -32,6 +33,11 @@ router.put("/:id",
 router.delete("/:id",
     authMiddleware,
      deleteTask);
+
+router.get("/calendar",
+    authMiddleware,
+    getMyTasks);
+
 
 
 
