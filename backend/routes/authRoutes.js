@@ -15,6 +15,10 @@ router.post("/signup",
 router.post("/login",
     login);
 
+router.get("/me",
+    authMiddleware,
+    getProfile);
+
 
 
 export default router;
