@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../../api/axios";
+
 
 interface User {
 
@@ -35,14 +36,11 @@ const Profile = () => {
 
             try {
 
-                // Later
+                
+                const res = await api.get("/auth/me");
 
-                // const res = await axios.get("/profile");
-
-                // setUser(res.data);
-
-                console.log("Fetch Profile");
-
+                setUser(res.data.user);
+    
             }
 
             catch (err) {
