@@ -169,6 +169,21 @@ export const getBoard = async (req, res) => {
 // ==========================================
 // UPDATE BOARD
 // ==========================================
+//
+// This endpoint is reused for THREE different frontend actions:
+//   1. Editing board details        -> { title, description, visibility }
+//   2. Toggling favorite            -> { favorite: true/false }
+//   3. Toggling archived            -> { archived: true/false }
+//
+// FIX: The original version always destructured only
+// { title, description, visibility } and passed that object straight
+// to findOneAndUpdate. That meant a request like { favorite: true }
+// updated NOTHING, because "favorite" was never read from req.body.
+//
+// The fix below only puts a field into the update object if the
+// caller actually sent it. That way "favorite: true" doesn't
+// accidentally wipe out title/description, and editing the title
+// doesn't accidentally wipe out favorite/archived.
 
 export const updateBoard = async (req, res) => {
 
@@ -179,8 +194,19 @@ export const updateBoard = async (req, res) => {
         const {
             title,
             description,
-            visibility
+            visibility,
+            favorite,
+            archived
         } = req.body;
+
+
+        const updates = {};
+
+        if (title !== undefined) updates.title = title;
+        if (description !== undefined) updates.description = description;
+        if (visibility !== undefined) updates.visibility = visibility;
+        if (favorite !== undefined) updates.favorite = favorite;
+        if (archived !== undefined) updates.archived = archived;
 
 
         const board = await Board.findOneAndUpdate(
@@ -191,11 +217,7 @@ export const updateBoard = async (req, res) => {
                 owner: req.user.userId
             },
 
-            {
-                title,
-                description,
-                visibility
-            },
+            updates,
 
             {
                 new: true,
