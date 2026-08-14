@@ -111,6 +111,50 @@ export const getBoardTasks = async (req, res) => {
 };
 
 
+export const getMyTasks = async (req, res) => {
+
+    try {
+
+        const boards = await Board.find({
+            owner: req.user.userId
+        }).select("_id");
+
+        const boardIds = boards.map(
+            (board) => board._id
+        );
+
+        const tasks = await Task.find({
+
+            board: { $in: boardIds },
+
+            dueDate: { $ne: null }
+
+        }).sort({
+
+            dueDate: 1
+
+        });
+
+
+        res.status(200).json({
+
+            tasks
+
+        });
+
+    } catch (error) {
+
+        console.error("Get My Tasks Error:", error);
+
+        res.status(500).json({
+            message: "Server error"
+        });
+
+    }
+
+};
+
+
 
 // 
 // GET SINGLE TASK
@@ -171,22 +215,25 @@ export const updateTask = async (req, res) => {
             priority,
             dueDate,
             assignee,
-            status
+            column
         } = req.body;
+
+
+        const updates = {};
+
+        if (title !== undefined) updates.title = title;
+        if (description !== undefined) updates.description = description;
+        if (priority !== undefined) updates.priority = priority;
+        if (dueDate !== undefined) updates.dueDate = dueDate;
+        if (assignee !== undefined) updates.assignee = assignee;
+        if (column !== undefined) updates.column = column;
 
 
         const task = await Task.findByIdAndUpdate(
 
             id,
 
-            {
-                title,
-                description,
-                priority,
-                dueDate,
-                assignee,
-                status
-            },
+            updates,
 
             {
                 new: true,
@@ -264,22 +311,4 @@ export const deleteTask = async (req, res) => {
 
     }
 
-};
-
-
-export const getMyTasks = async (req, res) => {
-    try {
-        const boards = await Board.find({ owner: req.user.userId }).select("_id");
-        const boardIds = boards.map((b) => b._id);
-
-        const tasks = await Task.find({
-            board: { $in: boardIds },
-            dueDate: { $ne: null },
-        }).sort({ dueDate: 1 });
-
-        res.status(200).json({ tasks });
-    } catch (error) {
-        console.error("Get My Tasks Error:", error);
-        res.status(500).json({ message: "Server error" });
-    }
 };
