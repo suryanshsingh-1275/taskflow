@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../../api/axios";
 
 interface Event {
 
@@ -53,13 +53,12 @@ const Calendar = () => {
 
             try {
 
-                // Later
+                const res = await api.get("/tasks/calendar");
 
-                // const res = await axios.get("http://localhost:5000/events");
+                setEvents(res.data.tasks);
 
-                // setEvents(res.data);
 
-                console.log("Fetch Events");
+                
 
             }
 
