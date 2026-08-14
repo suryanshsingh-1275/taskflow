@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../../api/axios";
+
 
 interface Analytics {
 
@@ -29,14 +30,15 @@ const Analytics = () => {
 
             try {
 
-                // Later
+               
 
-                // const res = await axios.get("http://localhost:5000/analytics");
+                const res = await api.get("/analytics");
 
-                // setAnalytics(res.data);
+                setAnalytics(res.data.analytics);
 
-                console.log("Fetch Analytics");
+               
 
+                
             }
 
             catch (err) {
