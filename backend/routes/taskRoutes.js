@@ -22,6 +22,11 @@ router.get("/board/:boardId",
     authMiddleware,
     getBoardTasks);
 
+    
+router.get("/calendar",
+    authMiddleware,
+    getMyTasks);
+
 router.get("/:id",
     authMiddleware,
     getTask);
@@ -34,13 +39,7 @@ router.delete("/:id",
     authMiddleware,
      deleteTask);
 
-router.get("/calendar",
-    authMiddleware,
-    getMyTasks);
-
-
 
 
 
 export default router;
-
