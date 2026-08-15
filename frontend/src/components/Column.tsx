@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useDroppable } from "@dnd-kit/core";
 import TaskCard from "./TaskCard";
 import CreateTaskModal from "./CreateTaskModel";
 import api from "../api/axios";
@@ -48,6 +49,8 @@ const Column = ({
     onTaskCreated,
 }: ColumnProps) => {
 
+    const { setNodeRef, isOver } = useDroppable({ id });
+
     const [showCreateTask, setShowCreateTask] =
         useState(false);
 
@@ -66,7 +69,7 @@ const Column = ({
                     priority: task.priority,
                     dueDate: task.dueDate || null,
 
-                   
+                
                     assignee: task.assignee || null,
 
                     board: boardId,
@@ -137,7 +140,10 @@ const Column = ({
 
             {/* COLUMN BODY */}
 
-            <div className="column-body">
+            <div
+                className={`column-body ${isOver ? "column-body-over" : ""}`}
+                ref={setNodeRef}
+            >
 
                 {
                     tasks.length === 0
