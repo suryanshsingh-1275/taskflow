@@ -17,6 +17,10 @@ import Profile from "../pages/profile/Profile";
 import Calendar from "../pages/calendar/Calender";
 import Analytics from "../pages/analytics/Analytics";
 
+import Archived from "../pages/misc/archives";
+import Favorites from "../pages/misc/favourite";
+
+
 
 const App = () => {
 
@@ -64,6 +68,16 @@ const App = () => {
                 <Route
                     path="/analytics"
                     element={<Analytics />}
+                />
+
+                <Route
+                    path="/archived"
+                    element={<Archived />}
+                />
+
+                <Route
+                    path="/favorites"
+                    element={<Favorites />}
                 />
 
 
