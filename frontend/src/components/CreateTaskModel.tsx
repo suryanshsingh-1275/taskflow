@@ -8,12 +8,18 @@ interface TaskData {
     assignee: string;
 }
 
+interface AssignableMember {
+    _id: string;
+    name: string;
+}
+
 interface CreateTaskModalProps {
     isOpen: boolean;
     onClose: () => void;
 
     boardId: string;
     columnId: string;
+    members: AssignableMember[];
 
     onCreate: (task: TaskData) => void;
 }
@@ -23,6 +29,7 @@ const CreateTaskModal = ({
     onClose,
     boardId,
     columnId,
+    members,
     onCreate,
 }: CreateTaskModalProps) => {
 
@@ -202,23 +209,39 @@ const CreateTaskModal = ({
                     </div>
 
 
-                    {/* Assignee */}
-
+                    
                     <div className="form-group">
 
                         <label className="form-label">
                             Assignee
                         </label>
 
-                        <input
-                            className="form-input"
-                            type="text"
-                            placeholder="Enter Assignee"
+                        <select
+                            className="form-select"
                             value={assignee}
                             onChange={(e) =>
                                 setAssignee(e.target.value)
                             }
-                        />
+                        >
+
+                            <option value="">
+                                Unassigned
+                            </option>
+
+                            {
+                                members.map((member) => (
+
+                                    <option
+                                        key={member._id}
+                                        value={member._id}
+                                    >
+                                        {member.name}
+                                    </option>
+
+                                ))
+                            }
+
+                        </select>
 
                     </div>
 
