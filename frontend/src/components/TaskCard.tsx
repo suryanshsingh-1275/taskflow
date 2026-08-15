@@ -42,9 +42,7 @@ const TaskCard = ({
     };
 
 
-    // ==========================================
     // EDIT  (PUT /tasks/:id)
-    // ==========================================
 
     const handleEdit = async (updatedTask: {
         title: string;
@@ -99,10 +97,7 @@ const TaskCard = ({
     };
 
 
-    // Look up the assignee's name for display. task.assignee is just
-    // a raw User _id from the backend (not populated), so this finds
-    // the matching name out of the members list already in memory
-    // instead of showing the bare ObjectId.
+    
     const assigneeName = task.assignee
         ? members.find((member) => member._id === task.assignee)?.name
             ?? "Unknown"
