@@ -22,11 +22,18 @@ interface TaskData {
     assignee: string;
 }
 
+
+interface AssignableMember {
+    _id: string;
+    name: string;
+}
+
 interface ColumnProps {
     id: string;
     title: string;
     tasks: Task[];
     boardId: string;
+    members: AssignableMember[];
 
     
     onTaskCreated: () => void;
@@ -37,6 +44,7 @@ const Column = ({
     title,
     tasks,
     boardId,
+    members,
     onTaskCreated,
 }: ColumnProps) => {
 
@@ -58,11 +66,12 @@ const Column = ({
                     priority: task.priority,
                     dueDate: task.dueDate || null,
 
+                   
                     assignee: task.assignee || null,
 
                     board: boardId,
 
-                    
+                    // Your schema calls this "column"
                     column: id,
                 }
             );
@@ -150,6 +159,7 @@ const Column = ({
                             <TaskCard
                                 key={task._id}
                                 task={task}
+                                members={members}
                                 onTaskChanged={onTaskCreated}
                             />
 
@@ -189,6 +199,8 @@ const Column = ({
                 boardId={boardId}
 
                 columnId={id}
+
+                members={members}
 
                 onCreate={handleCreateTask}
 
