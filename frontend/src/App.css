@@ -1,34 +1,3 @@
-/* ==========================================================================
-   TASKFLOW — "FIELD LEDGER" THEME
-   ==========================================================================
-   Design concept: TaskFlow as a foreman's project ledger — the kind of
-   worn, ruled notebook used to track jobs on a job site. Black ink on
-   pale paper, hairline rules instead of soft shadows, typewritten
-   meta-labels, and a wax-stamp accent for the one or two things that
-   need to grab your eye (priority, favorites, progress).
-
-   Palette:
-     --c-ink        near-black warm ink      #1c1b18
-     --c-ink-soft   secondary ink            #4a473f
-     --c-paper      page background          #ece9e1
-     --c-surface    card / panel surface     #fffefb
-     --c-line       hairline rule / border   #d6d2c4
-     --c-muted      captions / placeholders  #8b8778
-     --c-rust       primary accent (stamp)   #9c4a30
-     --c-olive      secondary accent         #6f6a42
-     --c-forest     low-priority / success   #3f5c46
-     --c-gold       favorite / highlight     #ad7f2c
-
-   Type:
-     Display  — Georgia (ledger headings)
-     Meta     — 'Courier New' (typewritten labels, counts, dates)
-     Body     — system sans (everything else, for legibility)
-
-   Signature element: the "stamp" — a circular ink-ring badge used for
-   the brand mark and reused as the progress indicator on board cards,
-   so the one bold shape in the UI is tied directly to what matters:
-   how far along a board is.
-   ========================================================================== */
 
 :root {
     --c-ink: #1c1b18;
@@ -606,6 +575,19 @@ a:focus-visible {
     background: var(--c-ink);
     color: #fffefb;
     border-color: var(--c-ink);
+}
+
+.member-remove {
+    all: unset;
+    margin-left: 6px;
+    cursor: pointer;
+    color: var(--c-rust);
+    font-weight: 700;
+    line-height: 1;
+}
+
+.member-remove:hover {
+    text-decoration: underline;
 }
 
 .invite-button {
