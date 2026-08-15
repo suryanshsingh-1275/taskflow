@@ -20,6 +20,8 @@ import Analytics from "../pages/analytics/Analytics";
 import Archived from "../pages/misc/archives";
 import Favorites from "../pages/misc/favourite";
 
+import ProtectedRoute from "../components/ProtectedRoute";
+
 
 
 const App = () => {
@@ -45,40 +47,25 @@ const App = () => {
 
                 {/* Main Pages */}
 
-                <Route
-                    path="/dashboard"
-                    element={<Dashboard />}
-                />
+                <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
 
-                <Route
-                    path="/board/:id"
-                    element={<BoardPage />}
-                />
 
-                <Route
-                    path="/profile"
-                    element={<Profile />}
-                />
+                <Route path="/board/:id" element={<ProtectedRoute><BoardPage /></ProtectedRoute>} />
 
-                <Route
-                    path="/calendar"
-                    element={<Calendar />}
-                />
 
-                <Route
-                    path="/analytics"
-                    element={<Analytics />}
-                />
+                <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
-                <Route
-                    path="/archived"
-                    element={<Archived />}
-                />
 
-                <Route
-                    path="/favorites"
-                    element={<Favorites />}
-                />
+                <Route path="/calendar" element={<ProtectedRoute><Calendar /></ProtectedRoute>} />
+
+
+                <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+
+
+                <Route path="/archived" element={<ProtectedRoute><Archived /></ProtectedRoute>} />
+
+
+                <Route path="/favorites" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
 
 
                 {/* Default */}
