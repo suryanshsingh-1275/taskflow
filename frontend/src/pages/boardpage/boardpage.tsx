@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import {
+    DndContext,
+    PointerSensor,
+    useSensor,
+    useSensors,
+} from "@dnd-kit/core";
+import type { DragEndEvent } from "@dnd-kit/core";
 import Column from "../../components/Column";
 import InviteMemberModal from "../../components/InviteMemberModal";
 import api from "../../api/axios";
@@ -20,9 +27,7 @@ interface ColumnData {
     tasks: Task[];
 }
 
-// getBoard populates owner/members (see boardController.js), so
-// these come back as {_id, name, email} objects instead of raw
-// ObjectId strings.
+
 interface Member {
     _id: string;
     name: string;
@@ -68,6 +73,16 @@ const BoardPage = () => {
 
     const [loading, setLoading] = useState(true);
     const [showInvite, setShowInvite] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
+
+    
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 8,
+            },
+        })
+    );
 
     
     const currentUser = JSON.parse(localStorage.getItem("user") || "null");
@@ -245,6 +260,50 @@ const BoardPage = () => {
     };
 
 
+    
+    const handleDragEnd = async (event: DragEndEvent) => {
+
+        const { active, over } = event;
+
+        if (!over) {
+            return;
+        }
+
+        const taskId = active.id as string;
+
+        const newColumn = over.id as
+            "todo" | "progress" | "review" | "done";
+
+
+        const currentColumn = columns.find((col) =>
+            col.tasks.some((task) => task._id === taskId)
+        );
+
+        // Dropped back into the same column it started in — nothing
+        // to update, and no reason to hit the API.
+        if (!currentColumn || currentColumn.id === newColumn) {
+            return;
+        }
+
+
+        try {
+
+            await api.put(
+                `/tasks/${taskId}`,
+                { column: newColumn }
+            );
+
+            await fetchTasks();
+
+        } catch (error) {
+
+            console.error("Move Task Error:", error);
+
+        }
+
+    };
+
+
     // LOADING
 
     if (loading) {
@@ -258,9 +317,7 @@ const BoardPage = () => {
     }
 
 
-    // ==========================================
     // BOARD NOT FOUND
-    // ==========================================
 
     if (!board) {
 
@@ -272,6 +329,8 @@ const BoardPage = () => {
 
     }
 
+
+    
 
     return (
 
@@ -339,11 +398,13 @@ const BoardPage = () => {
 
                 <div className="board-page-actions">
 
-                    <button
-                        className="board-search-button"
-                    >
-                        Search
-                    </button>
+                    <input
+                        className="search-board"
+                        type="text"
+                        placeholder="Search Tasks..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
 
                     <button
                         className="invite-button"
@@ -369,10 +430,22 @@ const BoardPage = () => {
 
             {/* COLUMNS */}
 
+            <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+
             <div className="columns-container">
 
                 {
-                    columns.map((column) => (
+                    columns.map((column) => {
+
+                        const visibleTasks = searchTerm.trim() === ""
+                            ? column.tasks
+                            : column.tasks.filter((task) =>
+                                task.title
+                                    .toLowerCase()
+                                    .includes(searchTerm.toLowerCase())
+                            );
+
+                        return (
 
                         <Column
 
@@ -382,7 +455,7 @@ const BoardPage = () => {
 
                             title={column.title}
 
-                            tasks={column.tasks}
+                            tasks={visibleTasks}
 
                             boardId={id!}
 
@@ -392,10 +465,14 @@ const BoardPage = () => {
 
                         />
 
-                    ))
+                        );
+
+                    })
                 }
 
             </div>
+
+            </DndContext>
 
 
             {/* INVITE MODAL */}
