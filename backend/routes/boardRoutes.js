@@ -4,7 +4,9 @@ import {
     getBoards,
     getBoard,
     updateBoard,
-    deleteBoard
+    deleteBoard,
+    inviteMember,
+    removeMember
 } from "../controllers/boardController.js";
 
 import authMiddleware from "../middleware/authMiddleware.js";
@@ -45,6 +47,22 @@ router.delete(
     "/:id",
     authMiddleware,
     deleteBoard
+);
+
+
+
+
+router.post(
+    "/:id/members",
+    authMiddleware,
+    inviteMember
+);
+
+
+router.delete(
+    "/:id/members/:memberId",
+    authMiddleware,
+    removeMember
 );
 
 
