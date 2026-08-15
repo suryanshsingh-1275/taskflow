@@ -20,7 +20,9 @@ interface ColumnData {
     tasks: Task[];
 }
 
-
+// getBoard populates owner/members (see boardController.js), so
+// these come back as {_id, name, email} objects instead of raw
+// ObjectId strings.
 interface Member {
     _id: string;
     name: string;
@@ -66,6 +68,9 @@ const BoardPage = () => {
 
     const [loading, setLoading] = useState(true);
     const [showInvite, setShowInvite] = useState(false);
+
+    
+    const currentUser = JSON.parse(localStorage.getItem("user") || "null");
 
 
     // FETCH TASKS
@@ -133,7 +138,6 @@ const BoardPage = () => {
 
         } catch (error) {
 
-           
             console.error(
                 "Failed to fetch tasks:",
                 error
@@ -213,6 +217,34 @@ const BoardPage = () => {
     };
 
 
+    // Called when the owner clicks the "x" on a member chip.
+    const handleRemoveMember = async (memberId: string) => {
+
+        if (!id) {
+            return;
+        }
+
+        try {
+
+            const res = await api.delete(
+                `/boards/${id}/members/${memberId}`
+            );
+
+            setBoard((prev) =>
+                prev
+                    ? { ...prev, members: res.data.board.members }
+                    : prev
+            );
+
+        } catch (error) {
+
+            console.error("Remove Member Error:", error);
+
+        }
+
+    };
+
+
     // LOADING
 
     if (loading) {
@@ -226,7 +258,9 @@ const BoardPage = () => {
     }
 
 
+    // ==========================================
     // BOARD NOT FOUND
+    // ==========================================
 
     if (!board) {
 
@@ -238,8 +272,6 @@ const BoardPage = () => {
 
     }
 
-
-    
 
     return (
 
@@ -281,6 +313,20 @@ const BoardPage = () => {
                                     title={member.email}
                                 >
                                     {member.name}
+
+                                    {
+                                        currentUser?._id === board.owner._id && (
+                                            <button
+                                                className="member-remove"
+                                                onClick={() =>
+                                                    handleRemoveMember(member._id)
+                                                }
+                                                title="Remove member"
+                                            >
+                                                ×
+                                            </button>
+                                        )
+                                    }
                                 </span>
 
                             ))
@@ -339,6 +385,8 @@ const BoardPage = () => {
                             tasks={column.tasks}
 
                             boardId={id!}
+
+                            members={[board.owner, ...board.members]}
 
                             onTaskCreated={fetchTasks}
 
