@@ -585,6 +585,49 @@ a:focus-visible {
     border-radius: var(--radius-sm);
 }
 
+.board-members {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.member-chip {
+    font-family: var(--font-meta);
+    font-size: 11px;
+    background: var(--c-paper);
+    border: 1px solid var(--c-line);
+    color: var(--c-ink-soft);
+    padding: 3px 9px;
+    border-radius: 12px;
+}
+
+.member-chip-owner {
+    background: var(--c-ink);
+    color: #fffefb;
+    border-color: var(--c-ink);
+}
+
+.invite-button {
+    background: transparent;
+    border: 1px solid var(--c-olive);
+    color: var(--c-olive);
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+}
+
+.invite-button:hover {
+    background: rgba(111, 106, 66, 0.08);
+}
+
+.form-error {
+    font-size: 12px;
+    color: var(--c-rust);
+    margin: 2px 0 0;
+}
+
 .columns-container {
     display: flex;
     gap: 18px;
