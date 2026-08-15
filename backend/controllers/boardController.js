@@ -1,9 +1,7 @@
 import Board from "../models/Board.js";
 
 
-// ==========================================
 // CREATE BOARD
-// ==========================================
 
 export const createBoard = async (req, res) => {
 
@@ -72,9 +70,7 @@ export const createBoard = async (req, res) => {
 
 
 
-// ==========================================
 // GET ALL BOARDS
-// ==========================================
 
 export const getBoards = async (req, res) => {
 
@@ -113,9 +109,7 @@ export const getBoards = async (req, res) => {
 
 
 
-// ==========================================
 // GET SINGLE BOARD
-// ==========================================
 
 export const getBoard = async (req, res) => {
 
@@ -166,24 +160,7 @@ export const getBoard = async (req, res) => {
 
 
 
-// ==========================================
 // UPDATE BOARD
-// ==========================================
-//
-// This endpoint is reused for THREE different frontend actions:
-//   1. Editing board details        -> { title, description, visibility }
-//   2. Toggling favorite            -> { favorite: true/false }
-//   3. Toggling archived            -> { archived: true/false }
-//
-// FIX: The original version always destructured only
-// { title, description, visibility } and passed that object straight
-// to findOneAndUpdate. That meant a request like { favorite: true }
-// updated NOTHING, because "favorite" was never read from req.body.
-//
-// The fix below only puts a field into the update object if the
-// caller actually sent it. That way "favorite: true" doesn't
-// accidentally wipe out title/description, and editing the title
-// doesn't accidentally wipe out favorite/archived.
 
 export const updateBoard = async (req, res) => {
 
@@ -263,9 +240,7 @@ export const updateBoard = async (req, res) => {
 
 
 
-// ==========================================
 // DELETE BOARD
-// ==========================================
 
 export const deleteBoard = async (req, res) => {
 
