@@ -11,13 +11,20 @@ interface Task {
     assignee: string | null;
 }
 
+interface AssignableMember {
+    _id: string;
+    name: string;
+}
+
 interface TaskCardProps {
     task: Task;
+    members: AssignableMember[];
     onTaskChanged: () => void;
 }
 
 const TaskCard = ({
     task,
+    members,
     onTaskChanged,
 }: TaskCardProps) => {
 
@@ -35,9 +42,9 @@ const TaskCard = ({
     };
 
 
-    
+    // ==========================================
     // EDIT  (PUT /tasks/:id)
-   
+    // ==========================================
 
     const handleEdit = async (updatedTask: {
         title: string;
@@ -71,9 +78,9 @@ const TaskCard = ({
     };
 
 
-    
+    // ==========================================
     // DELETE  (DELETE /tasks/:id)
-
+    // ==========================================
 
     const handleDelete = async () => {
 
@@ -90,6 +97,16 @@ const TaskCard = ({
         }
 
     };
+
+
+    // Look up the assignee's name for display. task.assignee is just
+    // a raw User _id from the backend (not populated), so this finds
+    // the matching name out of the members list already in memory
+    // instead of showing the bare ObjectId.
+    const assigneeName = task.assignee
+        ? members.find((member) => member._id === task.assignee)?.name
+            ?? "Unknown"
+        : "Unassigned";
 
 
     return (
@@ -185,7 +202,7 @@ const TaskCard = ({
                             </span>
 
                             <span>
-                                {task.assignee || "Unassigned"}
+                                {assigneeName}
                             </span>
 
                         </div>
@@ -202,6 +219,8 @@ const TaskCard = ({
                 isOpen={showEditModal}
 
                 task={task}
+
+                members={members}
 
                 onClose={() => setShowEditModal(false)}
 
