@@ -9,9 +9,15 @@ interface Task {
     assignee: string | null;
 }
 
+interface AssignableMember {
+    _id: string;
+    name: string;
+}
+
 interface EditTaskModalProps {
     isOpen: boolean;
     task: Task;
+    members: AssignableMember[];
 
     onClose: () => void;
 
@@ -29,6 +35,7 @@ interface EditTaskModalProps {
 const EditTaskModal = ({
     isOpen,
     task,
+    members,
     onClose,
     onEdit,
     onDelete,
@@ -38,7 +45,7 @@ const EditTaskModal = ({
     const [description, setDescription] = useState(task.description);
     const [priority, setPriority] = useState(task.priority);
 
-   
+    
     const [dueDate, setDueDate] = useState(task.dueDate ?? "");
     const [assignee, setAssignee] = useState(task.assignee ?? "");
 
@@ -169,20 +176,40 @@ const EditTaskModal = ({
                     </div>
 
 
+                   
+
                     <div className="form-group">
 
                         <label className="form-label">
                             Assignee
                         </label>
 
-                        <input
-                            className="form-input"
-                            type="text"
+                        <select
+                            className="form-select"
                             value={assignee}
                             onChange={(e) =>
                                 setAssignee(e.target.value)
                             }
-                        />
+                        >
+
+                            <option value="">
+                                Unassigned
+                            </option>
+
+                            {
+                                members.map((member) => (
+
+                                    <option
+                                        key={member._id}
+                                        value={member._id}
+                                    >
+                                        {member.name}
+                                    </option>
+
+                                ))
+                            }
+
+                        </select>
 
                     </div>
 
