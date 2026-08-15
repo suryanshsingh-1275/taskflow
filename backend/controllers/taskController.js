@@ -2,6 +2,21 @@ import Task from "../models/Task.js";
 import Board from "../models/Board.js";
 
 
+// ACCESS CHECK HELPER
+
+const isOwnerOrMember = (board, userId) => {
+
+    const isOwner = board.owner.toString() === userId.toString();
+
+    const isMember = board.members.some(
+        (memberId) => memberId.toString() === userId.toString()
+    );
+
+    return isOwner || isMember;
+
+};
+
+
 // CREATE TASK
 
 export const createTask = async (req, res) => {
@@ -24,6 +39,45 @@ export const createTask = async (req, res) => {
             return res.status(400).json({
                 message: "Title and board are required"
             });
+
+        }
+
+
+        const boardDoc = await Board.findById(board);
+
+        if (!boardDoc) {
+
+            return res.status(404).json({
+                message: "Board not found"
+            });
+
+        }
+
+        if (!isOwnerOrMember(boardDoc, req.user.userId)) {
+
+            return res.status(403).json({
+                message: "You do not have access to this board"
+            });
+
+        }
+
+
+        
+        if (assignee) {
+
+            const assigneeIsOwner = boardDoc.owner.toString() === assignee;
+
+            const assigneeIsMember = boardDoc.members.some(
+                (memberId) => memberId.toString() === assignee
+            );
+
+            if (!assigneeIsOwner && !assigneeIsMember) {
+
+                return res.status(400).json({
+                    message: "Assignee must be a member of this board"
+                });
+
+            }
 
         }
 
@@ -71,7 +125,6 @@ export const createTask = async (req, res) => {
 
 
 
-// 
 // GET TASKS OF A BOARD
 
 export const getBoardTasks = async (req, res) => {
@@ -79,6 +132,25 @@ export const getBoardTasks = async (req, res) => {
     try {
 
         const { boardId } = req.params;
+
+
+        const boardDoc = await Board.findById(boardId);
+
+        if (!boardDoc) {
+
+            return res.status(404).json({
+                message: "Board not found"
+            });
+
+        }
+
+        if (!isOwnerOrMember(boardDoc, req.user.userId)) {
+
+            return res.status(403).json({
+                message: "You do not have access to this board"
+            });
+
+        }
 
 
         const tasks = await Task.find({
@@ -111,12 +183,19 @@ export const getBoardTasks = async (req, res) => {
 };
 
 
+
+// GET MY TASKS  (GET /api/tasks/calendar)
+
+
 export const getMyTasks = async (req, res) => {
 
     try {
 
         const boards = await Board.find({
-            owner: req.user.userId
+            $or: [
+                { owner: req.user.userId },
+                { members: req.user.userId }
+            ]
         }).select("_id");
 
         const boardIds = boards.map(
@@ -156,9 +235,7 @@ export const getMyTasks = async (req, res) => {
 
 
 
-// 
 // GET SINGLE TASK
-// 
 
 export const getTask = async (req, res) => {
 
@@ -174,6 +251,17 @@ export const getTask = async (req, res) => {
 
             return res.status(404).json({
                 message: "Task not found"
+            });
+
+        }
+
+
+        const boardDoc = await Board.findById(task.board);
+
+        if (!boardDoc || !isOwnerOrMember(boardDoc, req.user.userId)) {
+
+            return res.status(403).json({
+                message: "You do not have access to this task"
             });
 
         }
@@ -199,7 +287,6 @@ export const getTask = async (req, res) => {
 
 
 
-
 // UPDATE TASK
 
 export const updateTask = async (req, res) => {
@@ -207,6 +294,28 @@ export const updateTask = async (req, res) => {
     try {
 
         const { id } = req.params;
+
+
+        const task = await Task.findById(id);
+
+        if (!task) {
+
+            return res.status(404).json({
+                message: "Task not found"
+            });
+
+        }
+
+
+        const boardDoc = await Board.findById(task.board);
+
+        if (!boardDoc || !isOwnerOrMember(boardDoc, req.user.userId)) {
+
+            return res.status(403).json({
+                message: "You do not have access to this task"
+            });
+
+        }
 
 
         const {
@@ -219,6 +328,25 @@ export const updateTask = async (req, res) => {
         } = req.body;
 
 
+        if (assignee) {
+
+            const assigneeIsOwner = boardDoc.owner.toString() === assignee;
+
+            const assigneeIsMember = boardDoc.members.some(
+                (memberId) => memberId.toString() === assignee
+            );
+
+            if (!assigneeIsOwner && !assigneeIsMember) {
+
+                return res.status(400).json({
+                    message: "Assignee must be a member of this board"
+                });
+
+            }
+
+        }
+
+
         const updates = {};
 
         if (title !== undefined) updates.title = title;
@@ -229,7 +357,7 @@ export const updateTask = async (req, res) => {
         if (column !== undefined) updates.column = column;
 
 
-        const task = await Task.findByIdAndUpdate(
+        const updatedTask = await Task.findByIdAndUpdate(
 
             id,
 
@@ -243,20 +371,11 @@ export const updateTask = async (req, res) => {
         );
 
 
-        if (!task) {
-
-            return res.status(404).json({
-                message: "Task not found"
-            });
-
-        }
-
-
         res.status(200).json({
 
             message: "Task updated successfully",
 
-            task
+            task: updatedTask
 
         });
 
@@ -283,8 +402,7 @@ export const deleteTask = async (req, res) => {
         const { id } = req.params;
 
 
-        const task = await Task.findByIdAndDelete(id);
-
+        const task = await Task.findById(id);
 
         if (!task) {
 
@@ -293,6 +411,20 @@ export const deleteTask = async (req, res) => {
             });
 
         }
+
+
+        const boardDoc = await Board.findById(task.board);
+
+        if (!boardDoc || !isOwnerOrMember(boardDoc, req.user.userId)) {
+
+            return res.status(403).json({
+                message: "You do not have access to this task"
+            });
+
+        }
+
+
+        await Task.findByIdAndDelete(id);
 
 
         res.status(200).json({
