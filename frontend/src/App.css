@@ -711,6 +711,22 @@ a:focus-visible {
     border-radius: var(--radius-sm);
     box-shadow: var(--shadow-card);
     padding: 12px 12px 10px;
+    cursor: grab;
+    touch-action: none;
+}
+
+
+.task-card-dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+    box-shadow: 0 8px 20px rgba(28, 27, 24, 0.25);
+}
+
+.column-body-over {
+    background: rgba(111, 106, 66, 0.08);
+    outline: 2px dashed var(--c-olive);
+    outline-offset: -4px;
+    border-radius: var(--radius-sm);
 }
 
 .task-card-header {
