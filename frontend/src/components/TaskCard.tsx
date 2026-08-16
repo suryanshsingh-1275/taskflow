@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useDraggable } from "@dnd-kit/core";
 import EditTaskModal from "./EditTaskModal";
 import api from "../api/axios";
 
@@ -27,6 +28,16 @@ const TaskCard = ({
     members,
     onTaskChanged,
 }: TaskCardProps) => {
+
+    
+    const { attributes, listeners, setNodeRef, transform, isDragging } =
+        useDraggable({ id: task._id });
+
+    const dragStyle = transform
+        ? {
+            transform: `translate(${transform.x}px, ${transform.y}px)`,
+        }
+        : undefined;
 
     const [showMenu, setShowMenu] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
@@ -76,9 +87,7 @@ const TaskCard = ({
     };
 
 
-    // ==========================================
     // DELETE  (DELETE /tasks/:id)
-    // ==========================================
 
     const handleDelete = async () => {
 
@@ -97,7 +106,7 @@ const TaskCard = ({
     };
 
 
-    
+  
     const assigneeName = task.assignee
         ? members.find((member) => member._id === task.assignee)?.name
             ?? "Unknown"
@@ -108,7 +117,13 @@ const TaskCard = ({
 
         <>
 
-            <div className="task-card">
+            <div
+                className={`task-card ${isDragging ? "task-card-dragging" : ""}`}
+                ref={setNodeRef}
+                style={dragStyle}
+                {...listeners}
+                {...attributes}
+            >
 
                 <div className="task-card-header">
 
