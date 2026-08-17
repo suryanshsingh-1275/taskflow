@@ -1,5 +1,23 @@
 import Board from "../models/Board.js";
 import User from "../models/User.js";
+import Notification from "../models/Notification.js";
+import { getCache, setCache, delCache } from "../utils/cache.js";
+
+const invalidateBoardCache = async (board) => {
+
+    const userIds = [
+        board.owner.toString(),
+        ...board.members.map((memberId) => memberId.toString()),
+    ];
+
+    await Promise.all(
+        userIds.flatMap((userId) => [
+            delCache(`board:${board._id}:${userId}`),
+            delCache(`boards:${userId}`),
+        ])
+    );
+
+};
 
 
 // CREATE BOARD
@@ -15,8 +33,6 @@ export const createBoard = async (req, res) => {
         } = req.body;
 
 
-        // Check required field
-
         if (!title) {
 
             return res.status(400).json({
@@ -25,8 +41,6 @@ export const createBoard = async (req, res) => {
 
         }
 
-
-        // Create board
 
         const board = await Board.create({
 
@@ -42,9 +56,13 @@ export const createBoard = async (req, res) => {
 
             favorite: false,
 
-            archived:false
+            archived: false
 
         });
+
+
+     
+        await delCache(`boards:${req.user.userId}`);
 
 
         res.status(201).json({
@@ -73,11 +91,20 @@ export const createBoard = async (req, res) => {
 
 // GET ALL BOARDS
 
-
-
 export const getBoards = async (req, res) => {
 
     try {
+
+        const cacheKey = `boards:${req.user.userId}`;
+
+        const cached = await getCache(cacheKey);
+
+        if (cached) {
+
+            return res.status(200).json({ boards: cached });
+
+        }
+
 
         const boards = await Board.find({
 
@@ -91,6 +118,10 @@ export const getBoards = async (req, res) => {
             createdAt: -1
 
         });
+
+
+        
+        await setCache(cacheKey, boards, 30);
 
 
         res.status(200).json({
@@ -117,12 +148,22 @@ export const getBoards = async (req, res) => {
 
 // GET SINGLE BOARD
 
-
 export const getBoard = async (req, res) => {
 
     try {
 
         const { id } = req.params;
+
+        
+        const cacheKey = `board:${id}:${req.user.userId}`;
+
+        const cached = await getCache(cacheKey);
+
+        if (cached) {
+
+            return res.status(200).json({ board: cached });
+
+        }
 
 
         const board = await Board.findOne({
@@ -150,6 +191,9 @@ export const getBoard = async (req, res) => {
         }
 
 
+        await setCache(cacheKey, board, 30);
+
+
         res.status(200).json({
 
             board
@@ -173,7 +217,6 @@ export const getBoard = async (req, res) => {
 
 
 // UPDATE BOARD
-
 
 export const updateBoard = async (req, res) => {
 
@@ -229,6 +272,9 @@ export const updateBoard = async (req, res) => {
         }
 
 
+        await invalidateBoardCache(board);
+
+
         res.status(200).json({
 
             message: "Board updated successfully",
@@ -282,6 +328,10 @@ export const deleteBoard = async (req, res) => {
         }
 
 
+        
+        await invalidateBoardCache(board);
+
+
         res.status(200).json({
 
             message: "Board deleted successfully"
@@ -306,7 +356,6 @@ export const deleteBoard = async (req, res) => {
 
 // INVITE MEMBER   (POST /boards/:id/members)
 
-
 export const inviteMember = async (req, res) => {
 
     try {
@@ -324,10 +373,6 @@ export const inviteMember = async (req, res) => {
 
         }
 
-
-        // Only the owner can invite. Scoping the find to
-        // { _id: id, owner: req.user.userId } means a non-owner
-        // gets a 404 here, same pattern as updateBoard/deleteBoard.
 
         const board = await Board.findOne({
             _id: id,
@@ -379,6 +424,22 @@ export const inviteMember = async (req, res) => {
             .populate("members", "name email");
 
 
+        
+        await invalidateBoardCache(updatedBoard);
+
+
+        const notification = await Notification.create({
+            recipient: invitedUser._id,
+            type: "board-invite",
+            message: `You were added to "${updatedBoard.title}"`,
+            relatedBoard: updatedBoard._id,
+        });
+
+        const io = req.app.get("io");
+
+        io.to(invitedUser._id.toString()).emit("notification", notification);
+
+
         res.status(200).json({
 
             message: "Member added successfully",
@@ -402,7 +463,6 @@ export const inviteMember = async (req, res) => {
 
 
 // REMOVE MEMBER   (DELETE /boards/:id/members/:memberId)
-
 
 export const removeMember = async (req, res) => {
 
@@ -435,6 +495,24 @@ export const removeMember = async (req, res) => {
         const updatedBoard = await Board.findById(board._id)
             .populate("owner", "name email")
             .populate("members", "name email");
+
+
+       
+        await invalidateBoardCache(updatedBoard);
+        await delCache(`board:${id}:${memberId}`);
+        await delCache(`boards:${memberId}`);
+
+
+        const notification = await Notification.create({
+            recipient: memberId,
+            type: "board-removed",
+            message: `You were removed from "${updatedBoard.title}"`,
+            relatedBoard: updatedBoard._id,
+        });
+
+        const io = req.app.get("io");
+
+        io.to(memberId).emit("notification", notification);
 
 
         res.status(200).json({
