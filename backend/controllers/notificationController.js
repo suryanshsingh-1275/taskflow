@@ -4,7 +4,7 @@ export const getNotifications = async (req, res) => {
 
     try {
 
-        const { userId } = req.user;
+        
 
 
         const notifications = await Notification.find({
