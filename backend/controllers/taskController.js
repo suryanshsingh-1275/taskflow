@@ -1,8 +1,7 @@
 import Task from "../models/Task.js";
 import Board from "../models/Board.js";
+import Notification from "../models/Notification.js";
 
-
-// ACCESS CHECK HELPER
 
 const isOwnerOrMember = (board, userId) => {
 
@@ -13,6 +12,31 @@ const isOwnerOrMember = (board, userId) => {
     );
 
     return isOwner || isMember;
+
+};
+
+const notifyAssignee = async (req, {
+    assigneeId,
+    task,
+    board,
+}) => {
+
+    if (!assigneeId || assigneeId === req.user.userId) {
+        return;
+    }
+
+    const notification = await Notification.create({
+        recipient: assigneeId,
+        type: "task-assigned",
+        message: `You were assigned "${task.title}" on "${board.title}"`,
+        relatedBoard: board._id,
+        relatedTask: task._id,
+    });
+
+    const io = req.app.get("io");
+
+   
+    io.to(assigneeId).emit("notification", notification);
 
 };
 
@@ -62,7 +86,6 @@ export const createTask = async (req, res) => {
         }
 
 
-        
         if (assignee) {
 
             const assigneeIsOwner = boardDoc.owner.toString() === assignee;
@@ -100,6 +123,13 @@ export const createTask = async (req, res) => {
 
             createdBy: req.user.userId
 
+        });
+
+
+        await notifyAssignee(req, {
+            assigneeId: assignee,
+            task,
+            board: boardDoc,
         });
 
 
@@ -186,7 +216,6 @@ export const getBoardTasks = async (req, res) => {
 
 // GET MY TASKS  (GET /api/tasks/calendar)
 
-
 export const getMyTasks = async (req, res) => {
 
     try {
@@ -208,11 +237,13 @@ export const getMyTasks = async (req, res) => {
 
             dueDate: { $ne: null }
 
-        }).sort({
+        })
+            .populate("board", "title")
+            .sort({
 
-            dueDate: 1
+                dueDate: 1
 
-        });
+            });
 
 
         res.status(200).json({
@@ -347,6 +378,12 @@ export const updateTask = async (req, res) => {
         }
 
 
+        const isNewAssignment =
+            assignee !== undefined &&
+            assignee &&
+            assignee !== task.assignee?.toString();
+
+
         const updates = {};
 
         if (title !== undefined) updates.title = title;
@@ -369,6 +406,17 @@ export const updateTask = async (req, res) => {
             }
 
         );
+
+
+        if (isNewAssignment) {
+
+            await notifyAssignee(req, {
+                assigneeId: assignee,
+                task: updatedTask,
+                board: boardDoc,
+            });
+
+        }
 
 
         res.status(200).json({
