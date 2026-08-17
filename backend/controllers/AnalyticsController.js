@@ -1,10 +1,23 @@
 import Board from "../models/Board.js";
 import Task from "../models/Task.js";
+import { getCache, setCache } from "../utils/cache.js";
 
+// GET ANALYTICS  (GET /api/analytics)
 
 export const getAnalytics = async (req, res) => {
 
     try {
+
+        const cacheKey = `analytics:${req.user.userId}`;
+
+        const cached = await getCache(cacheKey);
+
+        if (cached) {
+
+            return res.status(200).json({ analytics: cached });
+
+        }
+
 
         const boards = await Board.find({
             owner: req.user.userId
@@ -43,17 +56,23 @@ export const getAnalytics = async (req, res) => {
             : Math.round((completedTasks / totalTasks) * 100);
 
 
+        const analytics = {
+            totalBoards,
+            totalTasks,
+            completedTasks,
+            pendingTasks,
+            archivedBoards,
+            favoriteBoards,
+            productivity,
+        };
+
+
+        await setCache(cacheKey, analytics, 20);
+
+
         res.status(200).json({
 
-            analytics: {
-                totalBoards,
-                totalTasks,
-                completedTasks,
-                pendingTasks,
-                archivedBoards,
-                favoriteBoards,
-                productivity,
-            }
+            analytics
 
         });
 
