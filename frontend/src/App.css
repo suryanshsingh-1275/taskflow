@@ -1,4 +1,3 @@
-
 :root {
     --c-ink: #1c1b18;
     --c-ink-soft: #4a473f;
@@ -20,6 +19,14 @@
 
     --shadow-card: 0 1px 0 rgba(28, 27, 24, 0.06), 0 1px 3px rgba(28, 27, 24, 0.08);
     --shadow-modal: 0 12px 40px rgba(20, 19, 16, 0.35);
+
+    /* One shared easing curve used everywhere, instead of every
+       component picking its own timing. This alone is a big part of
+       why hand-rolled UIs feel "off" — inconsistent motion reads as
+       unpolished even when each individual animation looks fine. */
+    --ease: cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: 0.12s var(--ease);
+    --transition-base: 0.2s var(--ease);
 }
 
 * {
@@ -48,6 +55,15 @@ h1, h2, h3 {
 button {
     font-family: var(--font-body);
     cursor: pointer;
+    transition: transform var(--transition-fast), filter var(--transition-fast),
+                background var(--transition-fast), border-color var(--transition-fast);
+}
+
+/* Tactile press feedback — cheap, but genuinely noticeable. Skips
+   disabled buttons so a spinner-state "Adding..." button doesn't
+   visually "press" while it's mid-request. */
+button:not(:disabled):active {
+    transform: scale(0.97);
 }
 
 input, textarea, select {
@@ -57,6 +73,33 @@ input, textarea, select {
 ::selection {
     background: var(--c-gold);
     color: var(--c-surface);
+}
+
+/* Custom scrollbars — browser defaults are the fastest way to break
+   a deliberate color palette. Applies to every scrollable element
+   (column-body, modal-container, etc.) automatically. */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--c-paper);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--c-line);
+    border-radius: 6px;
+    border: 2px solid var(--c-paper);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--c-muted);
+}
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--c-line) var(--c-paper);
 }
 
 /* Focus states — kept visible everywhere, not just where it looked nice */
@@ -203,11 +246,71 @@ a:focus-visible {
     text-align: center;
     color: var(--c-muted);
     background: rgba(255, 255, 255, 0.4);
+    position: relative;
+}
+
+/* Small stamped-ring icon above empty-state headings, same motif as
+   the login/signup card corner flourish — reuse rather than invent a
+   second visual language. */
+.no-boards::before,
+.no-tasks::before,
+.empty-column::before {
+    content: "";
+    display: block;
+    width: 32px;
+    height: 32px;
+    margin: 0 auto 12px;
+    opacity: 0.4;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><circle cx='20' cy='20' r='17' fill='none' stroke='%239c4a30' stroke-width='1.4'/><circle cx='20' cy='20' r='12' fill='none' stroke='%239c4a30' stroke-width='0.8'/></svg>");
+    background-size: contain;
+}
+
+.empty-column::before {
+    width: 22px;
+    height: 22px;
+    margin-bottom: 8px;
 }
 
 .no-boards h2 {
     font-size: 18px;
     margin-bottom: 6px;
+}
+
+
+/* ==========================================================================
+   SKELETON LOADING
+   ==========================================================================
+   Usage: give any placeholder element className="skeleton" plus a
+   fixed width/height (inline style or a modifier class), instead of
+   showing plain "Loading..." text. Example:
+       <div className="skeleton" style={{ height: 20, width: "60%" }} />
+   ========================================================================== */
+
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        var(--c-line) 25%,
+        rgba(255, 255, 255, 0.6) 50%,
+        var(--c-line) 75%
+    );
+    background-size: 200% 100%;
+    border-radius: var(--radius-sm);
+    animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.skeleton-card {
+    height: 160px;
+    border-radius: var(--radius-md);
+}
+
+.skeleton-line {
+    height: 14px;
+    margin-bottom: 8px;
 }
 
 
@@ -390,6 +493,7 @@ a:focus-visible {
     justify-content: center;
     padding: 24px;
     z-index: 50;
+    animation: overlay-in var(--transition-base);
 }
 
 .modal-container {
@@ -401,6 +505,23 @@ a:focus-visible {
     border: 1px solid var(--c-line);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-modal);
+    animation: modal-in var(--transition-base);
+}
+
+@keyframes overlay-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes modal-in {
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
 
 .modal-header {
@@ -715,11 +836,11 @@ a:focus-visible {
     touch-action: none;
 }
 
-
 .task-card-dragging {
     opacity: 0.5;
     cursor: grabbing;
     box-shadow: 0 8px 20px rgba(28, 27, 24, 0.25);
+    rotate: 2deg;
 }
 
 .column-body-over {
@@ -1163,6 +1284,90 @@ a:focus-visible {
 
 .event-details p {
     margin: 0;
+}
+
+
+/* ==========================================================================
+   MY TASKS
+   ========================================================================== */
+
+.my-tasks-container {
+    padding: 32px 40px 64px;
+}
+
+.my-tasks-header {
+    margin-bottom: 24px;
+}
+
+.my-tasks-title {
+    font-size: 24px;
+}
+
+.no-tasks {
+    border: 1px dashed var(--c-line);
+    border-radius: var(--radius-md);
+    padding: 48px 24px;
+    text-align: center;
+    color: var(--c-muted);
+}
+
+.my-tasks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.my-task-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    background: var(--c-surface);
+    border: 1px solid var(--c-line);
+    border-left: 3px solid var(--c-olive);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: transform 0.1s ease;
+    flex-wrap: wrap;
+}
+
+.my-task-row:hover {
+    transform: translateX(2px);
+}
+
+.my-task-title {
+    font-size: 15px;
+    margin-bottom: 3px;
+}
+
+.my-task-board {
+    font-family: var(--font-meta);
+    font-size: 11px;
+    color: var(--c-muted);
+    margin: 0;
+}
+
+.my-task-meta {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    font-family: var(--font-meta);
+    font-size: 11px;
+    color: var(--c-ink-soft);
+}
+
+.my-task-priority {
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.my-task-column {
+    background: var(--c-paper);
+    border: 1px solid var(--c-line);
+    padding: 2px 8px;
+    border-radius: 10px;
+    text-transform: capitalize;
 }
 
 
