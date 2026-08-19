@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import BoardCard from "../../components/BoardCard";
 import CreateBoardModel from "../../components/CreateBoardModel";
+import NotificationBell from "../../components/Notificationbell";
 import { useEffect, useState } from "react";
 import api from "../../api/axios";
 
@@ -25,6 +26,7 @@ const Dashboard = () => {
 
 
     
+    // FETCH BOARDS
 
     useEffect(() => {
 
@@ -52,7 +54,7 @@ const Dashboard = () => {
     }, []);
 
 
-    
+   
     const filteredBoards = boards.filter((board) =>
         !board.archived &&
         board.title.toLowerCase().includes(search.toLowerCase())
@@ -102,7 +104,7 @@ const Dashboard = () => {
     };
 
 
-   
+    
     const handleBoardUpdated = (updatedBoard: Board) => {
 
         setBoards((prevBoards) =>
@@ -116,7 +118,7 @@ const Dashboard = () => {
     };
 
 
-    // Called by BoardCard after a successful delete.
+    
     const handleBoardDeleted = (boardId: string) => {
 
         setBoards((prevBoards) =>
@@ -204,6 +206,8 @@ const Dashboard = () => {
             <div className="dashboard-main">
 
                 <div className="dashboard-header">
+
+                    <NotificationBell />
 
                     <button
                         className="create-board-button"
