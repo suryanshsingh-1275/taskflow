@@ -9,6 +9,8 @@ import {
 import type { DragEndEvent } from "@dnd-kit/core";
 import Column from "../../components/Column";
 import InviteMemberModal from "../../components/InviteMemberModal";
+import NotificationBell from "../../components/Notificationbell";
+import BoardChat from "../../components/BoardChat";
 import api from "../../api/axios";
 
 interface Task {
@@ -75,7 +77,7 @@ const BoardPage = () => {
     const [showInvite, setShowInvite] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
 
-    
+
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
@@ -279,8 +281,7 @@ const BoardPage = () => {
             col.tasks.some((task) => task._id === taskId)
         );
 
-        // Dropped back into the same column it started in — nothing
-        // to update, and no reason to hit the API.
+
         if (!currentColumn || currentColumn.id === newColumn) {
             return;
         }
@@ -330,7 +331,6 @@ const BoardPage = () => {
     }
 
 
-    
 
     return (
 
@@ -397,6 +397,8 @@ const BoardPage = () => {
 
 
                 <div className="board-page-actions">
+
+                    <NotificationBell />
 
                     <input
                         className="search-board"
@@ -488,6 +490,8 @@ const BoardPage = () => {
                 onMemberAdded={handleMemberAdded}
 
             />
+            
+            <BoardChat boardId={id!} />
 
 
         </div>
