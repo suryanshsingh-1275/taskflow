@@ -7,6 +7,9 @@ import {
     Navigate
 } from "react-router-dom";
 
+import ProtectedRoute from "../components/ProtectedRoute";
+import { NotificationProvider } from "../context/NotificationContext";
+
 import Login from "../pages/auth/Login";
 import Signup from "../pages/auth/Signup";
 
@@ -20,7 +23,6 @@ import Analytics from "../pages/analytics/Analytics";
 import Archived from "../pages/misc/archives";
 import Favorites from "../pages/misc/favourite";
 
-import ProtectedRoute from "../components/ProtectedRoute";
 
 
 
@@ -29,6 +31,8 @@ const App = () => {
     return (
 
         <BrowserRouter>
+
+            <NotificationProvider>
 
             <Routes>
 
@@ -45,27 +49,71 @@ const App = () => {
                 />
 
 
-                {/* Main Pages */}
+                
+                <Route
+                    path="/dashboard"
+                    element={
+                        <ProtectedRoute>
+                            <Dashboard />
+                        </ProtectedRoute>
+                    }
+                />
 
-                <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                <Route
+                    path="/board/:id"
+                    element={
+                        <ProtectedRoute>
+                            <BoardPage />
+                        </ProtectedRoute>
+                    }
+                />
 
+                <Route
+                    path="/profile"
+                    element={
+                        <ProtectedRoute>
+                            <Profile />
+                        </ProtectedRoute>
+                    }
+                />
 
-                <Route path="/board/:id" element={<ProtectedRoute><BoardPage /></ProtectedRoute>} />
+                <Route
+                    path="/calendar"
+                    element={
+                        <ProtectedRoute>
+                            <Calendar />
+                        </ProtectedRoute>
+                    }
+                />
 
+                <Route
+                    path="/analytics"
+                    element={
+                        <ProtectedRoute>
+                            <Analytics />
+                        </ProtectedRoute>
+                    }
+                />
 
-                <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                <Route
+                    path="/archived"
+                    element={
+                        <ProtectedRoute>
+                            <Archived />
+                        </ProtectedRoute>
+                    }
+                />
 
+                <Route
+                    path="/favorites"
+                    element={
+                        <ProtectedRoute>
+                            <Favorites />
+                        </ProtectedRoute>
+                    }
+                />
 
-                <Route path="/calendar" element={<ProtectedRoute><Calendar /></ProtectedRoute>} />
-
-
-                <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
-
-
-                <Route path="/archived" element={<ProtectedRoute><Archived /></ProtectedRoute>} />
-
-
-                <Route path="/favorites" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
+                
 
 
                 {/* Default */}
@@ -76,6 +124,8 @@ const App = () => {
                 />
 
             </Routes>
+
+            </NotificationProvider>
 
         </BrowserRouter>
 
