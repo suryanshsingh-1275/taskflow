@@ -126,7 +126,6 @@ const NotificationContext =
         } catch (error) {
 
             console.error("Mark All As Read Error:", error);
-
         }
 
     };
