@@ -1,5 +1,5 @@
 import express from "express";
-import { getAnalytics } from "../controllers/analyticsController.js";
+import { getAnalytics } from "../controllers/AnalyticsController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
 
