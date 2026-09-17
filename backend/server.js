@@ -23,7 +23,9 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+    origin: process.env.FRONTEND_URL || "*",
+}));
 app.use(express.json());
 
 connectDB();
@@ -36,25 +38,37 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/messages", messageRoutes);
 
 
+// ==========================================
 // SOCKET.IO SETUP
-
+// ==========================================
+//
 // app.listen() normally creates a raw http.Server internally and
 // hides it from you. Socket.io needs direct access to that server
+
 const server = http.createServer(app);
 
 const io = new Server(server, {
     cors: {
-        origin: "*", 
+       
+        origin: process.env.FRONTEND_URL || "*",
     },
 });
 
 
 // Wires Socket.io to Redis pub/sub. With exactly one backend
+// instance (which is what you're running now) this has no visible
+// effect — Socket.io would work identically without it. What it buys
+// you: if you ever run multiple backend instances behind a load
+// balancer, a notification created on instance A can still reach a
+// user whose WebSocket happens to be connected to instance B,
+// because both instances are publishing/subscribing through the
+// same Redis. No code changes needed later — it's already wired.
 
 io.adapter(createAdapter(pubClient, subClient));
 
 
-// Middleware
+
+// system to maintain.
 
 io.use((socket, next) => {
 
@@ -89,9 +103,19 @@ io.on("connection", (socket) => {
     console.log("Socket connected:", socket.userId);
 
     // Each user gets a room named after their own user ID. Later,
+    // emitting to io.to(userId) from a controller reaches every tab
+    // or device that user has open, and only that user — nobody else
+    // is in this room.
     socket.join(socket.userId);
 
+
+    // ==========================================
+    // BOARD CHAT
+    // ==========================================
+    //
     // Notifications used a room per USER (socket.userId) — chat needs
+    // a room per BOARD instead, since a message has to reach every
+    
 
     socket.on("join-board", (boardId) => {
 
@@ -112,7 +136,9 @@ io.on("connection", (socket) => {
                 attachmentType,
             } = data;
 
-            // A message needs EITHER real text OR an attachment 
+            // A message needs EITHER real text OR an attachment —
+            // not neither. An attachment-only message (just a file,
+            // no caption) is valid; a completely empty message isn't.
             const hasText = text && text.trim() !== "";
 
             if (!boardId || (!hasText && !attachmentUrl)) {
@@ -166,6 +192,7 @@ io.on("connection", (socket) => {
     });
 
 });
+
 
 
 app.set("io", io);
