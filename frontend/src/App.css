@@ -1019,6 +1019,11 @@ a:focus-visible {
     color: var(--c-muted);
 }
 
+.signup-text,
+.login-text {
+    margin: 0;                
+}
+
 .signup-link,
 .login-link {
     color: var(--c-rust);
