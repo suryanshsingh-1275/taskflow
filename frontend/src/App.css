@@ -1012,6 +1012,7 @@ a:focus-visible {
     margin-top: 20px;
     text-align: center;
     display: flex;
+    align-items: center;
     gap: 6px;
     justify-content: center;
     font-size: 13px;
